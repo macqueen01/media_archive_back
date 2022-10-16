@@ -20,7 +20,7 @@ class CaseFromIdAPI(APIView):
             serializer = CaseUploadSerializer(queryset, many = True)
             return Response(serializer.data)
         else:
-            raise exeptions.NoptFound(f"Case id {case_id} not found")
+            raise exeptions.NotFound(f"Case id {case_id} not found")
 
         """
         if addes .value() to filter() then SRC returns null

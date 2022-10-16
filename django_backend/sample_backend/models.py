@@ -1,16 +1,13 @@
 from django.db import models
+from django.utils import timezone
+# imports all models inside 'model' file
+from .model.UserModel import User 
+from .model.CaseModel import VideoCase, ImageCase, DocCase
+from .model.MediaModel import VideoMedia, ImageMedia, DocMedia
 
 # Create your models here.
 
 
-class User(models.Model):
-    name = models.CharField(max_length = 20)
-    affiliation = models.CharField(max_length = 20)
-    created_at = models.DateTimeField(auto_now_add = True)
-    image = models.ImageField(upload_to = 'image/%Y%m%d', blank = True)
-
-    def __str__(self):
-        return self.name
 
 class Case(models.Model):
     case_type = models.CharField(max_length = 10)
