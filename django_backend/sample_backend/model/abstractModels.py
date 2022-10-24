@@ -11,13 +11,15 @@ class AbstractCase(models.Model):
     #   if form == 3 --> personel
     #   if form == 4 --> location
     case_form = None
-    form = models.IntegerField()
+    
+    # Field functions dependent on case_form
+    accessed_by = lambda form: f"form{form}_accessed_by = models.ManyToManyField(to = UserModel.User, related_name = 'access_to_form{form}')"
+    form = lambda form: f"form = models.IntegerField(default={form})"
 
     title = models.CharField(max_length = 30)
     created_at = models.DateTimeField()
     content = models.TextField()
     private = models.IntegerField()
-    accessed_by = models.ManyToManyField(to = UserModel.User, related_name = f"access_to{case_form}")
 
     class Meta:
         abstract = True

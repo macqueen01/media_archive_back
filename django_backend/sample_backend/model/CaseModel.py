@@ -7,12 +7,18 @@ from django.db import models
 
 class Location(abstractModels.AbstractCase):
     case_form = 4
+    exec(abstractModels.AbstractCase.form(case_form))
+    exec(abstractModels.AbstractCase.accessed_by(case_form))
+
     construction_date = models.DateTimeField()
     #connected_office = models.ManyToManyField(OrganizationModel.Organization, related_name="part_of")
 
 
 class Personel(abstractModels.AbstractCase):
     case_form = 3
+    exec(abstractModels.AbstractCase.form(case_form))
+    exec(abstractModels.AbstractCase.accessed_by(case_form))
+
     birth_date = models.DateTimeField()
     affiliation = models.ForeignKey(Location, on_delete=models.SET_NULL, null = True)
     prefix = models.CharField(max_length=20)
@@ -22,23 +28,37 @@ class Personel(abstractModels.AbstractCase):
 class VideoCase(abstractModels.AbstractCase):
 
     case_form = 1
+    exec(abstractModels.AbstractCase.form(case_form))
+    exec(abstractModels.AbstractCase.accessed_by(case_form))
+
     associate = models.ForeignKey(UserModel.User, on_delete=models.SET_NULL, null = True)
-    attendee = models.ManyToManyField(Personel, related_name = 'appears_in')
-    location = models.ForeignKey(Location, on_delete = models.SET_NULL, null = True)
+    attendee = models.ManyToManyField(Personel, related_name = f'appears_in_form{case_form}')
+    location = models.ForeignKey(Location, on_delete = models.SET_NULL, null = True, related_name = f"to_location_in_form{case_form}")
     produced = models.IntegerField()
-    affiliation = models.ForeignKey(Location, on_delete=models.SET_NULL, null = True)
+    affiliation = models.ForeignKey(Location, on_delete=models.SET_NULL, null = True, related_name = f"to_affiliation_in_form{case_form}")
     
     class Meta: 
         abstract = False
 
-class ImageCase(VideoCase):
+class ImageCase(abstractModels.AbstractCase):
     case_form = 0
-    class Meta:
+    exec(abstractModels.AbstractCase.form(case_form))
+    exec(abstractModels.AbstractCase.accessed_by(case_form))
+
+    associate = models.ForeignKey(UserModel.User, on_delete=models.SET_NULL, null = True)
+    attendee = models.ManyToManyField(Personel, related_name = f'appears_in_form{case_form}')
+    location = models.ForeignKey(Location, on_delete = models.SET_NULL, null = True, related_name = f"to_location_in_form{case_form}")
+    produced = models.IntegerField()
+    affiliation = models.ForeignKey(Location, on_delete=models.SET_NULL, null = True, related_name = f"to_affiliation_in_form{case_form}")
+    
+    class Meta: 
         abstract = False
 
 class DocCase(abstractModels.AbstractCase):
     case_form = 2
-    form = models.IntegerField()
+    exec(abstractModels.AbstractCase.form(case_form))
+    exec(abstractModels.AbstractCase.accessed_by(case_form))
+
     writer = models.ManyToManyField(Personel, related_name = 'wrote')
     referenced_personel = models.ManyToManyField(Personel, related_name = 'referenced_in')
     
