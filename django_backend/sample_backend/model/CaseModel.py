@@ -10,7 +10,7 @@ class Location(abstractModels.AbstractCase):
     exec(abstractModels.AbstractCase.form(case_form))
     exec(abstractModels.AbstractCase.accessed_by(case_form))
 
-    construction_date = models.DateTimeField()
+    construction_date = models.DateTimeField(null = True, default = None)
     #connected_office = models.ManyToManyField(OrganizationModel.Organization, related_name="part_of")
 
 
@@ -19,9 +19,9 @@ class Personel(abstractModels.AbstractCase):
     exec(abstractModels.AbstractCase.form(case_form))
     exec(abstractModels.AbstractCase.accessed_by(case_form))
 
-    birth_date = models.DateTimeField()
+    birth_date = models.DateTimeField(null = True, default = None)
     affiliation = models.ForeignKey(Location, on_delete=models.SET_NULL, null = True)
-    prefix = models.CharField(max_length=20)
+    prefix = models.CharField(max_length=20, null = True)
     connected_account = models.ForeignKey(UserModel.User, on_delete=models.SET_NULL, null = True)
 
 
@@ -31,7 +31,7 @@ class VideoCase(abstractModels.AbstractCase):
     exec(abstractModels.AbstractCase.form(case_form))
     exec(abstractModels.AbstractCase.accessed_by(case_form))
 
-    associate = models.ForeignKey(UserModel.User, on_delete=models.SET_NULL, null = True)
+    associate = models.ForeignKey(Personel, related_name = f'associated_in_form{case_form}', on_delete=models.SET_NULL, null = True)
     attendee = models.ManyToManyField(Personel, related_name = f'appears_in_form{case_form}')
     location = models.ForeignKey(Location, on_delete = models.SET_NULL, null = True, related_name = f"to_location_in_form{case_form}")
     produced = models.IntegerField()
@@ -45,11 +45,11 @@ class ImageCase(abstractModels.AbstractCase):
     exec(abstractModels.AbstractCase.form(case_form))
     exec(abstractModels.AbstractCase.accessed_by(case_form))
 
-    associate = models.ForeignKey(UserModel.User, on_delete=models.SET_NULL, null = True)
+    associate = models.ForeignKey(Personel, related_name = f'associated_in_form{case_form}', on_delete=models.SET_NULL, null = True)
     attendee = models.ManyToManyField(Personel, related_name = f'appears_in_form{case_form}')
     location = models.ForeignKey(Location, on_delete = models.SET_NULL, null = True, related_name = f"to_location_in_form{case_form}")
-    produced = models.IntegerField()
     affiliation = models.ForeignKey(Location, on_delete=models.SET_NULL, null = True, related_name = f"to_affiliation_in_form{case_form}")
+    produced = models.IntegerField()
     
     class Meta: 
         abstract = False

@@ -19,8 +19,6 @@ class ImageUploadSerializer(serializers.ModelSerializer):
     location = serializers.PrimaryKeyRelatedField(queryset = Location.objects.all())
     attendee = serializers.PrimaryKeyRelatedField(queryset = Personel.objects.all(), many = True)
     affiliation = serializers.PrimaryKeyRelatedField(queryset = Location.objects.all())
-    include = serializers.PrimaryKeyRelatedField(queryset = ImageCase.objects.all(), many = True)
-
 
 
     class Meta:
