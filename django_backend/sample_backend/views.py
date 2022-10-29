@@ -17,6 +17,17 @@ class UserListAPI(APIView):
         serializer = UserSerializer(queryset, many = True)
         return Response(serializer.data)
 
+@api_view(['GET'])
+def browse_view(request):
+    if request.method == 'GET':
+        try:
+            page = int(request.GET['_page'])
+        except:
+            page = 1
+
+        cases = ImageCase.objects.all()
+        return Response({'message': 'Request from front'})
+
 
 @api_view(['GET','POST'])
 def image_case_create_view(request):
