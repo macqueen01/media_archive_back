@@ -2,11 +2,18 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.generics import CreateAPIView
+from rest_framework import exceptions
+
+
+from converter import Converter
+from .videoconverter import default_format
+from django.conf import settings
+
+import os
+import subprocess
 
 from .models import *
 from .serializer import *
-from rest_framework import exceptions
 from django.utils import timezone
 
 # Create your views here.
@@ -139,6 +146,7 @@ def image_case_create_view(request):
 
         new_image_case.save()
 
+
         return Response({'message': 'Files has been recieved'})
 
 
@@ -151,6 +159,7 @@ def video_case_create_view(request):
     if request.method == 'POST':
         reference_list = []
         attendee = []
+        conv = Converter()
         title = request.data['title']
         content = request.data['content']
         private = request.data['private']
@@ -250,6 +259,13 @@ def video_case_create_view(request):
                         )
                 new_video_media.save()
                 new_video_media.referenced_in.add(new_video_case)
+                
+                video_url = os.path.join(settings.MEDIA_ROOT, new_video_media.url.__str__())
+                new_url = os.path.join(settings.MEDIA_ROOT, f'./archive/{file_name}')
+
+                sub = subprocess.run(f"python3 ./sample_backend/videoconverter.py {video_url} {new_url} {file_name}", text=True, shell=True)
+                #sub = subprocess.run("ls", text = True, shell=True)
+                new_video_media.url = new_url
                 new_video_media.save()
 
         new_video_case.save()
@@ -258,3 +274,5 @@ def video_case_create_view(request):
 
 
     return Response({'message': ""})
+
+
