@@ -1,3 +1,5 @@
+from json import JSONEncoder
+import json
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
@@ -6,6 +8,7 @@ from rest_framework import exceptions
 
 
 from converter import Converter
+from time import sleep
 from .videoconverter import default_format
 from django.conf import settings
 
@@ -179,9 +182,6 @@ def image_case_create_view(request):
 def video_case_create_view(request):
 
     if request.method == 'POST':
-        reference_list = []
-        attendee = []
-        conv = Converter()
         title = request.data['title']
         content = request.data['content']
         private = request.data['private']
@@ -287,11 +287,24 @@ def video_case_create_view(request):
                 new_url = os.path.join(settings.MEDIA_ROOT, f'/archive/{file_name}.mp4')
 
                 try:
-                    sub = subprocess.run(
+                    status = settings.PROCESS_STATUS[file_name] = {'encoding': True,
+                                                                   'started_at': timezone.now(),
+                                                                   'ended_at': None}
+                    
+                    print(f"{file_name}'s encoding process started at {status['started_at']}%")
+
+                    sub = subprocess.Popen(
                         f"python3 ./sample_backend/videoconverter.py '{video_url}' './media/archive/{file_name}.mp4' '{file_name}'",
                         text = True,
-                        shell = True)
-                    print("process ended")
+                        shell = True,
+                        stdout = subprocess.PIPE,
+                        universal_newlines=True)
+
+                    settings.PROCESS_STATUS[file_name] = {'encoding': False,
+                              'started_at': status['started_at'],
+                              'ended_at': timezone.now()}
+                        
+                    print(f"{file_name}'s encoding process ended at {settings.PROCESS_STATUS[file_name]['ended_at']}%")
 
                 except:
                     print("Error occurred in codec conversion")
@@ -305,5 +318,13 @@ def video_case_create_view(request):
 
 
     return Response({'message': ""})
+
+@api_view(['GET'])
+def browse_process(request):
+    if request.method == "GET":
+        print(settings.PROCESS_STATUS)
+        return Response({'message': 'process status in terminal', 'status': settings.PROCESS_STATUS.__repr__()})
+    return Response({'message': 'wrong method'})
+
 
 

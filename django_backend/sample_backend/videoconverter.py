@@ -1,6 +1,8 @@
 from converter import Converter
 import subprocess
 import sys
+import os
+import time 
 from queue import deque
 
 """
@@ -27,11 +29,12 @@ args = sys.argv[1:]
     
 def main():
     conv = Converter()
-    print(conv.probe(args[0]))
     timecodes = conv.convert(args[0], args[1], default_format, twopass = False, timeout = None)
     for timecode in timecodes:
-        print(f"{args[2]} in progress... {timecode}")
-    print(conv.probe(args[1]))
+        print(timecode)
+
+        
+
         
 
     
