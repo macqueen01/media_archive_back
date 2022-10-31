@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
+from .process import ProcessControl
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -27,6 +28,8 @@ SECRET_KEY = 'django-insecure-h%a&ef4=qi5ggo6j%od8x+*+!yn@&#&0qwl=42^)5l7vwi7*e(
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+PROCESS_STATUS = {}
 
 
 # Application definition

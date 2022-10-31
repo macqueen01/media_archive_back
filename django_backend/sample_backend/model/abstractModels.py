@@ -2,6 +2,8 @@ from django.db import models
 from . import UserModel
 from . import CaseModel
 
+import os
+
 
 class AbstractCase(models.Model):
     # form : 
@@ -40,17 +42,26 @@ class AbstractMedia(models.Model):
 class AbstractVideoMedia(AbstractMedia):
     url = models.FileField(upload_to = 'stream/video/%Y%m%d')
 
+    def filename(self):
+        return os.path.basename(self.file.name)
+
     class Meta:
         abstract = True
 
 class AbstractImageMedia(AbstractMedia):
     url = models.ImageField(upload_to = 'stream/image/%Y%m%d')
 
+    def filename(self):
+        return os.path.basename(self.file.name)
+
     class Meta:
         abstract = True
 
 class AbstractDocumentMedia(AbstractMedia):
     url = models.FileField(upload_to = 'stream/document/%Y%m%d')
+
+    def filename(self):
+        return os.path.basename(self.file.name)
 
     class Meta:
         abstract = True
