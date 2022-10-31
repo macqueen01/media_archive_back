@@ -35,6 +35,28 @@ def browse_view(request):
         cases = ImageCase.objects.all()
         return Response({'message': 'Request from front'})
 
+@api_view(['GET'])
+def browse_detail(request, int):
+    key = int
+    if request.method == 'GET':
+        try:
+            form = int(request.GET['_type'])
+            if (form == 0):
+                browse_object = ImageCase.objects.filter(id__exact = key)
+            elif (form == 1):
+                browse_object = VideoCase.objects.filter(id__exact = key)
+            elif (form == 2):
+                browse_object = DocCase.objects.filter(id__exact = key)
+            else:
+                return Response({'message': 'The file type requested cannot be browsed'})
+            
+            if (not browse_object.exists()):
+                return Response({'message': 'The file with given id does not exist'})
+            else:
+                pass
+
+        except:
+            return Response({'message': 'The file type has not submitted'})
 
 @api_view(['GET','POST'])
 def image_case_create_view(request):
@@ -257,6 +279,7 @@ def video_case_create_view(request):
                         extension = file_extension,
                         url = file,
                         )
+
                 new_video_media.save()
                 new_video_media.referenced_in.add(new_video_case)
                 
@@ -264,7 +287,6 @@ def video_case_create_view(request):
                 new_url = os.path.join(settings.MEDIA_ROOT, f'./archive/{file_name}')
 
                 sub = subprocess.run(f"python3 ./sample_backend/videoconverter.py {video_url} {new_url} {file_name}", text=True, shell=True)
-                #sub = subprocess.run("ls", text = True, shell=True)
                 new_video_media.url = new_url
                 new_video_media.save()
 

@@ -19,6 +19,7 @@ class ImageCaseUploadSerializer(serializers.ModelSerializer):
     location = serializers.PrimaryKeyRelatedField(queryset = Location.objects.all())
     attendee = serializers.PrimaryKeyRelatedField(queryset = Personel.objects.all(), many = True)
     affiliation = serializers.PrimaryKeyRelatedField(queryset = Location.objects.all())
+    # include field serializer should return media object housed inside
     include = serializers.PrimaryKeyRelatedField(queryset = ImageCase.objects.all(), many = True)
 
 
