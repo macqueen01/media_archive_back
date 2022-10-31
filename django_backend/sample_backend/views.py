@@ -269,7 +269,7 @@ def video_case_create_view(request):
         if (last_index := int(request.data['file_index'])) != -1:
             for i in range(last_index + 1):
                 file = request.data[f'{i}']
-                file_name = file.name
+                file_name = file.name.split('.')[0]
                 file_obj = file
                 file_extension = file.name.split('.')[-1]
 
@@ -284,10 +284,19 @@ def video_case_create_view(request):
                 new_video_media.referenced_in.add(new_video_case)
                 
                 video_url = os.path.join(settings.MEDIA_ROOT, new_video_media.url.__str__())
-                new_url = os.path.join(settings.MEDIA_ROOT, f'./archive/{file_name}')
+                new_url = os.path.join(settings.MEDIA_ROOT, f'/archive/{file_name}.mp4')
 
-                sub = subprocess.run(f"python3 ./sample_backend/videoconverter.py {video_url} {new_url} {file_name}", text=True, shell=True)
-                new_video_media.url = new_url
+                try:
+                    sub = subprocess.run(
+                        f"python3 ./sample_backend/videoconverter.py '{video_url}' './media/archive/{file_name}.mp4' '{file_name}'",
+                        text = True,
+                        shell = True)
+                    print("process ended")
+
+                except:
+                    print("Error occurred in codec conversion")
+                
+                new_video_media.url = f'/archive/{file_name}.mp4'
                 new_video_media.save()
 
         new_video_case.save()
