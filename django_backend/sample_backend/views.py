@@ -9,7 +9,6 @@ from rest_framework import exceptions
 
 from converter import Converter
 from time import sleep
-from .videoconverter import default_format
 from django.conf import settings
 
 import os
@@ -269,7 +268,7 @@ def video_case_create_view(request):
         if (last_index := int(request.data['file_index'])) != -1:
             for i in range(last_index + 1):
                 file = request.data[f'{i}']
-                file_name = file.name.split('.')[0]
+                file_name = file.name
                 file_obj = file
                 file_extension = file.name.split('.')[-1]
 
@@ -284,7 +283,7 @@ def video_case_create_view(request):
                 new_video_media.referenced_in.add(new_video_case)
                 
                 video_url = os.path.join(settings.MEDIA_ROOT, new_video_media.url.__str__())
-                new_url = os.path.join(settings.MEDIA_ROOT, f'/archive/{file_name}.mp4')
+                new_url = os.path.join(settings.MEDIA_ROOT, f'./archive/{file_name}.mp4')
 
                 try:
                     status = settings.PROCESS_STATUS[file_name] = {'encoding': True,
@@ -294,11 +293,13 @@ def video_case_create_view(request):
                     print(f"{file_name}'s encoding process started at {status['started_at']}%")
 
                     sub = subprocess.Popen(
-                        f"python3 ./sample_backend/videoconverter.py '{video_url}' './media/archive/{file_name}.mp4' '{file_name}'",
+                        f"python3 ./sample_backend/VideoProcessors/videoconverter.py '{video_url}' './media/archive/{file_name}.mp4' '{file_name}'",
                         text = True,
                         shell = True,
                         stdout = subprocess.PIPE,
                         universal_newlines=True)
+
+                    
 
                     settings.PROCESS_STATUS[file_name] = {'encoding': False,
                               'started_at': status['started_at'],
@@ -328,3 +329,44 @@ def browse_process(request):
 
 
 
+@api_view(['POST'])
+def codec_check(request):
+    if request.method == 'POST':
+        codecs = []
+        if (last_index := int(request.data['file_index'])) != -1:
+            for i in range(last_index + 1):
+                file = request.data[f'{i}']
+                file_name = file.name
+                file_obj = file
+                new_video_media = VideoMedia(
+                        created_at = timezone.now(),
+                        name = file_name,
+                        extension = 'unknown',
+                        url = file,
+                        )
+                new_video_media.save()
+
+                video_url = os.path.join(settings.MEDIA_ROOT, new_video_media.url.__str__())
+                
+                try:
+                    sub = subprocess.Popen(
+                        f"python3 ./sample_backend/VideoProcessors/codeccheck.py '{video_url}'",
+                        text = True,
+                        shell = True,
+                        stdout = subprocess.PIPE,
+                        universal_newlines=True
+                    )
+
+                    codecs.append(sub.stdout.read().split('\n')[0])
+                except:
+                    print("Error occurred in codec checking")
+                
+                if os.path.exists(video_url):
+                    os.remove(video_url)
+                    print(f"{video_url} file removed successfully")
+
+                new_video_media.delete()
+
+            print(codecs)
+        return Response({'message': 'codec checking done', 'data': codecs.__repr__()})
+    return Response({'message': 'wrong method call'})
