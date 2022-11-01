@@ -1,4 +1,4 @@
-from .ffmpeg_settings import default_format, CONVERTER 
+from converter import Converter
 import subprocess
 import sys
 import os
@@ -14,12 +14,19 @@ convert: Converter().convert(INPUT_FILE, OUTPUT_FILE, OPTIONS)
 --> this returns timecode iterable...
 """
 
-
 video_queue = deque
 
 args = sys.argv[1:]
 
 
+default_format = {
+    'format': 'mp4',
+    'audio': { 'codec': 'aac' },
+    'video': { 'codec': 'h264' }
+}
+
+CONVERTER = Converter()
+    
 
     
 def main():

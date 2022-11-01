@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import exceptions
+from rest_framework.pagination import PageNumberPagination
 
 
 from converter import Converter
@@ -29,13 +30,15 @@ class UserListAPI(APIView):
 @api_view(['GET'])
 def browse_view(request):
     if request.method == 'GET':
-        try:
-            page = int(request.GET['_page'])
-        except:
-            page = 1
-
         cases = ImageCase.objects.all()
-        return Response({'message': 'Request from front'})
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 1
+        browse_cases = ImageCase.objects.all()
+        result_page = paginator.paginate_queryset(browse_cases, request)
+        serializer = BrowseCaseSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+    return Response({'message': "wrong method call"})
 
 @api_view(['GET'])
 def browse_detail(request, int):
@@ -300,7 +303,6 @@ def video_case_create_view(request):
                         universal_newlines=True)
 
                     
-
                     settings.PROCESS_STATUS[file_name] = {'encoding': False,
                               'started_at': status['started_at'],
                               'ended_at': timezone.now()}
