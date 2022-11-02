@@ -2,8 +2,11 @@ from django.db import models
 from . import abstractModels
 from . import CaseModel
 
+import os
+
 class VideoMedia(abstractModels.AbstractVideoMedia):
     referenced_in = models.ManyToManyField(CaseModel.VideoCase, related_name = "include")
+
     class Meta:
         abstract = False
 

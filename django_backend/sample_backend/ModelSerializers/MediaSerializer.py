@@ -18,5 +18,5 @@ class VideoMediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = VideoMedia
         fields = (
-            'url'
+            'url',
         )

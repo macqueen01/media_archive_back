@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'sample_backend',
     'rest_framework',
     'corsheaders',
+    'drf_multiple_model'
 ]
 
 MIDDLEWARE = [

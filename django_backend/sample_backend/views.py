@@ -6,7 +6,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import exceptions
 from rest_framework.pagination import PageNumberPagination
-
+from drf_multiple_model.pagination import MultipleModelLimitOffsetPagination
+from drf_multiple_model.views import FlatMultipleModelAPIView
 
 from converter import Converter
 from time import sleep
@@ -27,18 +28,62 @@ class UserListAPI(APIView):
         serializer = UserSerializer(queryset, many = True)
         return Response(serializer.data)
 
+class ResponseThen(Response):
+    def __init__(self, data, then_callback, **kwargs):
+        super().__init__(data, **kwargs)
+        self.then_callback = then_callback
+
+    def close(self):
+        super().close()
+        self.then_callback()
+
+
+
 @api_view(['GET'])
-def browse_view(request):
-    if request.method == 'GET':
-        cases = ImageCase.objects.all()
+def browse_view(request, form):
+    if (request.method == 'GET'):
+        if form == 0:
+            case_obj = ImageCase
+            serializer_class = ImageCaseSerializer
+        elif form == 1:
+            case_obj = VideoCase
+            serializer_class = VideoCaseSerializer
+        elif form == 2:
+            case_obj = DocCase
+            serializer_class = VideoCaseSerializer
+
+        browse_cases = case_obj.objects.all()
 
         paginator = PageNumberPagination()
         paginator.page_size = 12
-        browse_cases = ImageCase.objects.all()
         result_page = paginator.paginate_queryset(browse_cases, request)
-        serializer = ImageCaseSerializer(result_page, many=True)
+        serializer = serializer_class(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
     return Response({'message': "wrong method call"})
+
+
+class LimitPagination(MultipleModelLimitOffsetPagination):
+    default_limit = 12
+
+class BrowseCaseAPIView(FlatMultipleModelAPIView):
+    pagination_class = LimitPagination
+    add_model_type = True
+    sorting_fields = ['created_at']
+
+    def get_querylist(self):
+
+        image_case_to_join = ImageCase.objects.all()
+        video_case_to_join = VideoCase.objects.all()
+
+        # un_sorted_queryset = activity_serializer.data + team_serializer.data + team_player_left_serializer.data
+
+        querylist = (
+            {'queryset': image_case_to_join.distinct(), 'serializer_class': ImageCaseSerializer},
+            {'queryset': video_case_to_join.distinct(), 'serializer_class': VideoCaseSerializer},
+        )
+
+        return querylist
+
 
 @api_view(['GET'])
 def browse_detail(request, form, id):
@@ -49,23 +94,19 @@ def browse_detail(request, form, id):
             if (form == 0):
                 browse_object = ImageCase.objects.filter(id__exact = key)
                 serializer = ImageCaseSerializer
-                print(1)
             elif (form == 1):
                 browse_object = VideoCase.objects.filter(id__exact = key)
                 serializer = VideoCaseSerializer
-                print(1)
             elif (form == 2):
                 browse_object = DocCase.objects.filter(id__exact = key)
                 serializer = VideoCaseSerializer
-                print(1)
             else:
                 return Response({'message': 'The file type requested cannot be browsed', 'code': 0})
             
             if (not browse_object.exists()):
                 return Response({'message': 'The file with given id does not exist', 'code': 0})
             else:
-                result = ImageCaseSerializer(browse_object.get())
-                print(result.data)
+                result = serializer(browse_object.get())
                 return Response(result.data)
 
         except:
@@ -73,6 +114,11 @@ def browse_detail(request, form, id):
 
 @api_view(['GET','POST'])
 def image_case_create_view(request):
+
+    def do_after():
+        # ...code to run *after* response is returned to client
+        pass
+    
 
     if request.method == 'POST':
         reference_list = []
@@ -182,7 +228,7 @@ def image_case_create_view(request):
         new_image_case.save()
 
 
-        return Response({'message': 'Files has been recieved'})
+        return Response({'message': "file recieved successfully "})
 
 
     return Response({'message': ""})
@@ -190,6 +236,9 @@ def image_case_create_view(request):
 
 @api_view(['GET', 'POST'])
 def video_case_create_view(request):
+
+    def do_after():
+        pass
 
     if request.method == 'POST':
         title = request.data['title']
@@ -273,13 +322,14 @@ def video_case_create_view(request):
                 )
                 new_personel.save()
                 new_video_case.attendee.add(new_personel)
+                
     
 
 
         if (last_index := int(request.data['file_index'])) != -1:
             for i in range(last_index + 1):
                 file = request.data[f'{i}']
-                file_name = file.name
+                file_name = os.path.basename(file.name)
                 file_obj = file
                 file_extension = file.name.split('.')[-1]
 
@@ -304,23 +354,25 @@ def video_case_create_view(request):
                     print(f"{file_name}'s encoding process started at {status['started_at']}%")
 
                     sub = subprocess.Popen(
-                        f"python3 ./sample_backend/VideoProcessors/videoconverter.py '{video_url}' './media/archive/{file_name}.mp4' '{file_name}'",
+                        f"python3 ./sample_backend/VideoProcessors/videoconverter.py '{video_url}' './media/archive/{file_name}' '{file_name}'",
                         text = True,
                         shell = True,
                         stdout = subprocess.PIPE,
                         universal_newlines=True)
 
-                    
-                    settings.PROCESS_STATUS[file_name] = {'encoding': False,
+                    try:
+                        outs, errors = sub.communicate()
+                        settings.PROCESS_STATUS[file_name] = {'encoding': False,
                               'started_at': status['started_at'],
                               'ended_at': timezone.now()}
-                        
-                    print(f"{file_name}'s encoding process ended at {settings.PROCESS_STATUS[file_name]['ended_at']}%")
+                        print(f"{file_name}'s encoding process ended at {settings.PROCESS_STATUS[file_name]['ended_at']}%")
+                    except:
+                        sub.kill()
 
                 except:
                     print("Error occurred in codec conversion")
                 
-                new_video_media.url = f'/archive/{file_name}.mp4'
+                new_video_media.url = f'/archive/{file_name}'
                 new_video_media.save()
 
         new_video_case.save()

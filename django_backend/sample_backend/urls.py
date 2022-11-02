@@ -5,7 +5,7 @@ urlpatterns = [
     path('', UserListAPI.as_view()),
     path('cases/create/0', image_case_create_view),
     path('cases/create/1', video_case_create_view),
-    path('cases/browse', browse_view),
+    path('cases/browse/<int:form>', browse_view),
     path('cases/browse/status', browse_process),
     path('cases/codec', codec_check),
     path('cases/browse/<int:form>/<int:id>', browse_detail)
