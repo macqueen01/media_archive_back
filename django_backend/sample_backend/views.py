@@ -33,35 +33,43 @@ def browse_view(request):
         cases = ImageCase.objects.all()
 
         paginator = PageNumberPagination()
-        paginator.page_size = 1
+        paginator.page_size = 12
         browse_cases = ImageCase.objects.all()
         result_page = paginator.paginate_queryset(browse_cases, request)
-        serializer = BrowseCaseSerializer(result_page, many=True)
+        serializer = ImageCaseSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
     return Response({'message': "wrong method call"})
 
 @api_view(['GET'])
-def browse_detail(request, int):
-    key = int
+def browse_detail(request, form, id):
+    form = form
+    key = id 
     if request.method == 'GET':
         try:
-            form = int(request.GET['_type'])
             if (form == 0):
                 browse_object = ImageCase.objects.filter(id__exact = key)
+                serializer = ImageCaseSerializer
+                print(1)
             elif (form == 1):
                 browse_object = VideoCase.objects.filter(id__exact = key)
+                serializer = VideoCaseSerializer
+                print(1)
             elif (form == 2):
                 browse_object = DocCase.objects.filter(id__exact = key)
+                serializer = VideoCaseSerializer
+                print(1)
             else:
-                return Response({'message': 'The file type requested cannot be browsed'})
+                return Response({'message': 'The file type requested cannot be browsed', 'code': 0})
             
             if (not browse_object.exists()):
-                return Response({'message': 'The file with given id does not exist'})
+                return Response({'message': 'The file with given id does not exist', 'code': 0})
             else:
-                pass
+                result = ImageCaseSerializer(browse_object.get())
+                print(result.data)
+                return Response(result.data)
 
         except:
-            return Response({'message': 'The file type has not submitted'})
+            return Response({'message': 'The file type has not submitted', 'code': 0})
 
 @api_view(['GET','POST'])
 def image_case_create_view(request):

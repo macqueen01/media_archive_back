@@ -1,21 +1,12 @@
 from rest_framework import serializers
 from ..models import User, Location, Personel, DocCase, ImageCase, VideoCase
 from ..models import VideoMedia, ImageMedia, DocMedia
+from .MediaSerializer import *
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
-
-
-class ImageMediaSerializer(serializers.ModelSerializer):
-    url = serializers.ImageField()
-
-    class Meta:
-        model = ImageMedia
-        fields = (
-            'url',
-        )
 
 class PersonelSerializer(serializers.ModelSerializer):
     title = serializers.CharField(max_length = 30)
@@ -37,7 +28,8 @@ class LocationSerializer(serializers.ModelSerializer):
             'title'
         )
 
-class BrowseCaseSerializer(serializers.ModelSerializer):
+
+class BaseCaseSerializer(serializers.ModelSerializer):
     form = serializers.IntegerField()
     title = serializers.CharField(max_length = 30)
     created_at = serializers.DateTimeField()
@@ -49,9 +41,11 @@ class BrowseCaseSerializer(serializers.ModelSerializer):
     location = LocationSerializer()
     attendee = PersonelSerializer(many = True)
     affiliation = LocationSerializer()
+
+
+class ImageCaseSerializer(BaseCaseSerializer):
     include = ImageMediaSerializer(many = True)
 
-
     class Meta:
         model = ImageCase
         fields = ( 
@@ -65,37 +59,27 @@ class BrowseCaseSerializer(serializers.ModelSerializer):
                    'location',
                    'attendee',
                    'affiliation',
-                   'include'
+                   'include',
+                   'id'
                 )
 
-class ImageUploadSerializer(serializers.ModelSerializer):
-    form = serializers.IntegerField()
-    title = serializers.CharField(max_length = 30)
-    created_at = serializers.DateTimeField()
-    content = serializers.CharField()
-    private = serializers.IntegerField()
-    produced = serializers.IntegerField()
-
-    associate = serializers.PrimaryKeyRelatedField(queryset = User.objects.all())
-    location = serializers.PrimaryKeyRelatedField(queryset = Location.objects.all())
-    attendee = serializers.PrimaryKeyRelatedField(queryset = Personel.objects.all(), many = True)
-    affiliation = serializers.PrimaryKeyRelatedField(queryset = Location.objects.all())
-
+class VideoCaseSerializer(BaseCaseSerializer):
+    include = VideoMediaSerializer(many = True)
 
     class Meta:
-        model = ImageCase
-        fields = ( 
-                   'form',
-                   'title',
-                   'created_at',
-                   'content',
-                   'private',
-                   'produced',
-                   'associate',
-                   'location',
-                   'attendee',
-                   'affiliation',
-                   'include'
-                )
-
+        model = VideoCase
+        fields = (
+            'form',
+            'title',
+            'created_at',
+            'content',
+            'private',
+            'produced',
+            'associate',
+            'location',
+            'attendee',
+            'affiliation',
+            'include',
+            'id'
+        )
 
