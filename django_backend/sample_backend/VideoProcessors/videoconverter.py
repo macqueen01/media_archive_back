@@ -1,4 +1,5 @@
 from converter import Converter
+import asyncio
 import subprocess
 import sys
 import os
@@ -29,18 +30,38 @@ CONVERTER = Converter()
     
 
     
-def main():
-    timecodes = CONVERTER.convert(args[0], args[1], default_format, twopass = False, timeout = None)
+async def main():
+
+    in_path = args[0]
+    out_path = args[1]
+
+    result = await check_dir(out_path)
+
+    if (result == 0):
+        return 0
+
+    timecodes = CONVERTER.convert(in_path, out_path, default_format, twopass = False, timeout = None)
     for timecode in timecodes:
         print(timecode)
+        
+    return 1
 
         
+async def check_dir(out_dir):
+    out_dirname, i = os.path.split(out_dir)
 
+    if (not os.path.isdir(out_dirname)):
+        print('checking...')
+        os.mkdir(out_dirname)
+    elif (os.path.isdir(out_dir)):
+        print("file name needs to be differed")
+        return 0
+    return 1
         
 
     
     
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
         
     

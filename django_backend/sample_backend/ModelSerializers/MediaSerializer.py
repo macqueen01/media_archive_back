@@ -13,10 +13,15 @@ class ImageMediaSerializer(serializers.ModelSerializer):
         )
 
 class VideoMediaSerializer(serializers.ModelSerializer):
-    url = serializers.FileField()
+    url = serializers.CharField()
+    thumbnail = serializers.CharField()
+    archive = serializers.FileField()
+
 
     class Meta:
         model = VideoMedia
         fields = (
             'url',
+            'thumbnail',
+            'archive'
         )

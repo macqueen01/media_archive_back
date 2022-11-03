@@ -40,28 +40,35 @@ class AbstractMedia(models.Model):
 
 
 class AbstractVideoMedia(AbstractMedia):
-    url = models.FileField(upload_to = 'stream/video/%Y%m%d')
+    archive = models.FileField(upload_to = 'stream/video/%Y%m%d', blank = True)
+    url = models.CharField(max_length = 300, blank = True)
+    thumbnail = models.CharField(max_length = 500, blank = True)
 
     def filename(self):
-        return os.path.basename(self.file.name)
+        basename = os.path.basename(self.file.name)
+        return os.path.splitext(basename)[0]
 
     class Meta:
         abstract = True
 
 class AbstractImageMedia(AbstractMedia):
     url = models.ImageField(upload_to = 'stream/image/%Y%m%d')
+    
 
     def filename(self):
-        return os.path.basename(self.file.name)
+        basename = os.path.basename(self.file.name)
+        return os.path.splitext(basename)
 
     class Meta:
         abstract = True
 
 class AbstractDocumentMedia(AbstractMedia):
     url = models.FileField(upload_to = 'stream/document/%Y%m%d')
+    thumbnail = models.CharField(max_length = 500, blank = True)
 
     def filename(self):
-        return os.path.basename(self.file.name)
+        basename = os.path.basename(self.file.name)
+        return os.path.splitext(basename)[0]
 
     class Meta:
         abstract = True

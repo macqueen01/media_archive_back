@@ -22,4 +22,4 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('drf/', include('sample_backend.urls'))
-] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT) 
+] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT) + static(settings.ARCHIVE_URL, document_root = settings.ARCHIVE_ROOT)

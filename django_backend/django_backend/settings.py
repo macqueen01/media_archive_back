@@ -137,6 +137,10 @@ ARCHIVE_URL = 'archive/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
+# ARCHIVE_ROOT stores all streamable videos with thumbnails.
+# It is an essential visual database for streaming.
+ARCHIVE_ROOT = os.path.join(BASE_DIR, "archive")
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

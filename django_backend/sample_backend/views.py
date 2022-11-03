@@ -329,22 +329,25 @@ def video_case_create_view(request):
         if (last_index := int(request.data['file_index'])) != -1:
             for i in range(last_index + 1):
                 file = request.data[f'{i}']
-                file_name = os.path.basename(file.name)
+                file_name, file_extension = os.path.splitext(file.name)
                 file_obj = file
-                file_extension = file.name.split('.')[-1]
+                date = timezone.now().date().__str__().replace('-', '')
 
                 new_video_media = VideoMedia(
                         created_at = timezone.now(),
                         name = file_name,
                         extension = file_extension,
-                        url = file,
+                        archive = file,
                         )
 
                 new_video_media.save()
                 new_video_media.referenced_in.add(new_video_case)
+
+                file_name = new_video_media.name
                 
-                video_url = os.path.join(settings.MEDIA_ROOT, new_video_media.url.__str__())
-                new_url = os.path.join(settings.MEDIA_ROOT, f'./archive/{file_name}.mp4')
+                video_url = os.path.join(settings.MEDIA_ROOT, new_video_media.archive.__str__())
+                new_url = os.path.join(settings.ARCHIVE_ROOT, f'{date}/video/{file_name}.mp4')
+                thumbnail_url = os.path.join(settings.ARCHIVE_ROOT, f'{date}/thumbnail/{file_name}.jpg')
 
                 try:
                     status = settings.PROCESS_STATUS[file_name] = {'encoding': True,
@@ -353,27 +356,47 @@ def video_case_create_view(request):
                     
                     print(f"{file_name}'s encoding process started at {status['started_at']}%")
 
-                    sub = subprocess.Popen(
-                        f"python3 ./sample_backend/VideoProcessors/videoconverter.py '{video_url}' './media/archive/{file_name}' '{file_name}'",
+                    encoding_processor = subprocess.Popen(
+                        f"python3 ./sample_backend/VideoProcessors/videoconverter.py '{video_url}' '{new_url}' '{file_name}'",
                         text = True,
                         shell = True,
                         stdout = subprocess.PIPE,
                         universal_newlines=True)
 
                     try:
-                        outs, errors = sub.communicate()
+                        outs, errors = encoding_processor.communicate()
                         settings.PROCESS_STATUS[file_name] = {'encoding': False,
                               'started_at': status['started_at'],
                               'ended_at': timezone.now()}
                         print(f"{file_name}'s encoding process ended at {settings.PROCESS_STATUS[file_name]['ended_at']}%")
                     except:
-                        sub.kill()
+                        encoding_processor.kill()
+
+                    thumbnail_processor = subprocess.Popen(
+                        f"python3 ./sample_backend/VideoProcessors/thumbnail_generator.py '{new_url}' '{thumbnail_url}'",
+                        text = True,
+                        shell = True,
+                        stdout = subprocess.PIPE,
+                        universal_newlines=True
+                    )
+
+                    try:
+                        outs, errors = thumbnail_processor.communicate()
+                        new_video_media.url = f'/archive/{date}/video/{file_name}.mp4'
+                        new_video_media.thumbnail = f'/archive/{date}/thumbnail/{file_name}.jpg'
+                        new_video_media.save()
+                        print(f'thumbnail generated at {thumbnail_url}')
+
+
+                    except:
+                        thumbnail_processor.kill()
 
                 except:
                     print("Error occurred in codec conversion")
-                
-                new_video_media.url = f'/archive/{file_name}'
-                new_video_media.save()
+                    if os.path.exists(new_url):
+                        os.remove(new_url)
+                        print(f"{new_url} file removed successfully")
+                    new_video_media.delete()
 
         new_video_case.save()
 
@@ -404,11 +427,11 @@ def codec_check(request):
                         created_at = timezone.now(),
                         name = file_name,
                         extension = 'unknown',
-                        url = file,
+                        archive = file,
                         )
                 new_video_media.save()
 
-                video_url = os.path.join(settings.MEDIA_ROOT, new_video_media.url.__str__())
+                video_url = os.path.join(settings.MEDIA_ROOT, new_video_media.archive.__str__())
                 
                 try:
                     sub = subprocess.Popen(
