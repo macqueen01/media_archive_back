@@ -50,7 +50,7 @@ async def check_dir(out_dir):
 
     if (not os.path.isdir(out_dirname)):
         print('checking...')
-        os.mkdir(out_dirname)
+        os.makedirs(out_dirname)
     elif (os.path.isdir(out_dir)):
         print("file name needs to be differed")
         return 0

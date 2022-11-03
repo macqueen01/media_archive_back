@@ -52,7 +52,7 @@ def browse_view(request, form):
             case_obj = DocCase
             serializer_class = VideoCaseSerializer
 
-        browse_cases = case_obj.objects.all()
+        browse_cases = case_obj.objects.all().order_by('-created_at')
 
         paginator = PageNumberPagination()
         paginator.page_size = 12
