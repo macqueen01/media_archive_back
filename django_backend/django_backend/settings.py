@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 from pathlib import Path
 from .process import ProcessControl
+from datetime import timedelta
+from rest_framework.settings import api_settings
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -46,7 +48,8 @@ INSTALLED_APPS = [
     'sample_backend',
     'rest_framework',
     'corsheaders',
-    'drf_multiple_model'
+    'drf_multiple_model',
+    'knox'
 ]
 
 MIDDLEWARE = [
@@ -93,6 +96,22 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Rest framework
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": ('knox.auth.TokenAuthentication', )
+}
+
+REST_KNOX = {
+    'SECURE_HASH_ALGORITHM': 'cryptography.hazmat.primitives.hashes.SHA512',
+    'AUTH_TOKEN_CHARACTER_LENGTH': 64,
+    'TOKEN_TTL': timedelta(minutes = 50),
+    'TOKEN_LIMIT_PER_USER': None,
+    'AUTO_REFRESH': False,
+    'EXPIRY_DATETIME_FORMAT': api_settings.DATETIME_FORMAT,
+}
+
 
 
 # Password validation
