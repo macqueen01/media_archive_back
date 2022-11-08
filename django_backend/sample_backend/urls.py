@@ -10,6 +10,7 @@ urlpatterns = [
     path('cases/codec', codec_check),
     path('cases/browse/<int:form>/<int:id>', case_browse_detail),
     path('user/create', create_user),
-    path('user/login', login_user)
+    path('user/login', login_user),
+    path('user/check-status', check_status)
     #path('cases/browse/<int:id>', browse_detail_view)
 ]
