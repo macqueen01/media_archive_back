@@ -30,6 +30,7 @@ class MessageManager(models.Manager):
         # message_type == 1 -> this should indicate acceptance of a request. connected to the request object through foreign key
         # message_type == 0 -> this should indicate rejection of a request. connected to the request object through foreign key
         # postpone -> this method should be implemented for both single receiver argument and multiple receivers argument.
+        
         pass
 
     def visible_messages(self, receiver):
