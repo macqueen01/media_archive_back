@@ -4,6 +4,7 @@ from django.utils import timezone
 from .model.UserModel import User 
 from .model.CaseModel import VideoCase, ImageCase, DocCase, Location, Personel
 from .model.MediaModel import VideoMedia, ImageMedia, DocMedia
+from .model.RequestModel import AccessRequest, AccessRequestComponent, AuthorityRequest
 
 # Create your models here.
 

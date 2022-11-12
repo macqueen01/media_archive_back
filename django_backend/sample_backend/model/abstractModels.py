@@ -4,6 +4,24 @@ from . import CaseModel
 
 import os
 
+class CaseManager(models.Manager):
+
+    def grant_permission_to(self, case, user, status):
+        # this gets users with current permission
+        if status == 1:
+            exec(f"case.form{case.form}_accessed_by.add(user)")
+            return False
+        else:
+            return True
+        
+    def get_permitted_users(self, case):
+        exec(f"return case.form.form{case.form}_accessed_by")
+
+class RequestManager(models.Manager):
+
+    def get_subject(self, request):
+        exec(f"return request.request_form{request.is_authority}_requested_by")
+
 
 class AbstractCase(models.Model):
     # form : 
@@ -23,6 +41,8 @@ class AbstractCase(models.Model):
     content = models.TextField()
     private = models.IntegerField()
 
+    objects = CaseManager()
+
     class Meta:
         abstract = True
 
@@ -32,6 +52,23 @@ class AbstractMedia(models.Model):
     name = models.CharField(max_length=300)
     extension = models.CharField(max_length = 20)
 
+    class Meta:
+        abstract = True
+
+class AbstractRequest(models.Model):
+    is_authority = None
+
+    # request form is assigned to either 0 (access request) or 1 (authority request)
+
+    requested_by = lambda is_authority: f"request_form{is_authority}_requested_by = models.ForeignKey(to = UserModel.User, on_delete = models.CASCADE, related_name = 'requested_form{is_authority}')"
+    form = lambda is_authority: f"request_form = models.IntegerField(default={is_authority})"
+
+    created_at = models.DateTimeField()
+    title = models.CharField(max_length = 200)
+    comments = models.CharField(max_length = 300)
+
+    objects = RequestManager()
+    
     class Meta:
         abstract = True
 

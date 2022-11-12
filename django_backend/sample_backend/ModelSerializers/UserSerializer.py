@@ -6,8 +6,6 @@ from .CaseSerializer import *
 
 class CreateUserSerializer(serializers.ModelSerializer):
 
-
-
     class Meta:
         model = User
         fields = (
@@ -39,8 +37,6 @@ class UserSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
-
-
 
     def validate(self, data):
         user = authenticate(**data)
