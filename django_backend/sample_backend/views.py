@@ -1,7 +1,9 @@
 from rest_framework.views import APIView
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import exceptions
+from rest_framework import status
 from drf_multiple_model.pagination import MultipleModelLimitOffsetPagination
 from drf_multiple_model.views import FlatMultipleModelAPIView
 
@@ -18,12 +20,13 @@ class UserListAPI(APIView):
         serializer = UserSerializer(queryset, many = True)
         return Response(serializer.data)
 
-
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def image_case_create_view(request):
     return case_upload.image(request)
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def video_case_create_view(request):
     return case_upload.video(request)
 
@@ -32,14 +35,17 @@ def codec_check(request):
     return utilities.codec_check(request)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def case_browse_view(request, form):
     return case_browse.main(request, form)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def case_browse_detail(request, form, id):
     return case_browse.detail(request, form, id)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def browse_process(request):
     if request.method == "GET":
         print(settings.PROCESS_STATUS)
@@ -53,6 +59,14 @@ def create_user(request):
 @api_view(['POST'])
 def login_user(request):
     return user_control.login_user(request)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def check_status(request):
+    return Response(
+        {'message': 'User already logged in',
+         'code': 200}
+    )
 
 class ResponseThen(Response):
     def __init__(self, data, then_callback, **kwargs):
