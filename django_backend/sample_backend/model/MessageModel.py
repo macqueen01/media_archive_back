@@ -50,7 +50,7 @@ class MessageManager(models.Manager):
                 sender = sender,
                 receiver = receiver,
                 content = content,
-                created_at = timezone.now()
+                created_at = timezone.now(),
                 message_type = message_type
             )
             new_message.save()
