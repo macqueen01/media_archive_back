@@ -20,20 +20,20 @@ class MessageManager(models.Manager):
         pass
 
     def get_messages_related_user(self, user_id):
-        q = moidels.Q()
+        q = models.Q()
         q.add(models.Q(hidden__exact = 0), q.AND)
         q.add(models.Q(receiver__id__exact = user_id) | 
             models.Q(sender__id__exact = user_id), q.AND)
         return self.filter(q)
 
     def get_messages_received_by_user(self, user_id):
-        q = moidels.Q()
+        q = models.Q()
         q.add(models.Q(hidden__exact = 0), q.AND)
         q.add(models.Q(receiver__id__exact = user_id), q.AND)
         return self.filter(q)
 
     def get_messages_sent_by_user(self, user_id):
-        q = moidels.Q()
+        q = models.Q()
         q.add(models.Q(hidden__exact = 0), q.AND)
         q.add(models.Q(sender__id__exact = user_id), q.AND)
         return self.filter(q)
@@ -75,7 +75,7 @@ class MessageManager(models.Manager):
         # messages that are not deleted
         pass
 
-class MessageModel(models.Model):
+class Message(models.Model):
     sender = models.ForeignKey(UserModel.User, on_delete = models.SET_NULL, null = True, related_name = "message_sent")
     receiver = models.ForeignKey(UserModel.User, on_delete = models.SET_NULL, null = True, related_name = "message_received")
     content = models.TextField()

@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.response import Response
 from rest_framework import exceptions
 from rest_framework import status
@@ -11,7 +11,7 @@ from django.conf import settings
 
 from .models import *
 from .serializer import *
-from .view import case_browse, case_upload, utilities, user_control
+from .view import case_browse, case_upload, utilities, user_control, request_processing
 
 
 class UserListAPI(APIView):
@@ -67,6 +67,19 @@ def check_status(request):
         {'message': 'User already logged in',
          'code': 200}
     )
+
+@api_view(['POST'])
+@permission_classes([IsAdminUser])
+def resolve_user_request(request):
+    return request_processing.process_request(request)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def open_user_request(request):
+    pass
+
+
 
 class ResponseThen(Response):
     def __init__(self, data, then_callback, **kwargs):

@@ -11,6 +11,7 @@ from drf_multiple_model.views import FlatMultipleModelAPIView
 
 from converter import Converter
 from django.conf import settings
+from knox.models import AuthToken
 
 import os
 import subprocess
@@ -18,6 +19,7 @@ import subprocess
 from sample_backend.models import *
 from sample_backend.serializer import *
 from django.utils import timezone
+from knox.settings import CONSTANTS
 
 
 def codec_check(request):
@@ -60,3 +62,42 @@ def codec_check(request):
             print(codecs)
         return Response({'message': 'codec checking done', 'data': codecs.__repr__()})
     return Response({'message': 'wrong method call'})
+
+
+def get_user_from_token(token):
+    objs = AuthToken.objects.filter(token_key=token[:CONSTANTS.TOKEN_KEY_LENGTH])
+    if len(objs) == 0:
+        return None
+    return objs.first().user
+
+
+def check_user_level(user):
+    if user.is_staff and user.is_active:
+        return 2
+    elif not user.is_staff and user.is_active:
+        return 1
+    elif not user.is_staff and not user.is_active:
+        return 0
+    elif user.is_staff:
+        # level of an inactive admin is still 2
+        return 2
+    else:
+        return False
+
+def case_id_map_parser(request):
+    image_cases = request.data['image_case']
+    video_cases = request.data['video_cases']
+    doc_cases = request.data['doc_cases']
+
+    # construction 
+
+    case_id_map = {}
+
+    if image_cases:
+        case_id_map[0] = image_cases
+    if video_cases:
+        case_id_map[1] = video_cases
+    if doc_cases:
+        case_id_map[2] = doc_cases
+
+    return case_id_map

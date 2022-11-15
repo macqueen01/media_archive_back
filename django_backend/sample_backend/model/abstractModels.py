@@ -15,12 +15,27 @@ class CaseManager(models.Manager):
             return True
         
     def get_permitted_users(self, case):
-        exec(f"return case.form.form{case.form}_accessed_by")
+        case_form = case.form
+        if case_form == 0:
+            return case.form.form0_accessed_by
+        elif case_form == 1:
+            return case.form.form1_accessed_by
+        elif case_form == 2:
+            return case.form.form2_accessed_by
+        else: 
+            return False
 
 class RequestManager(models.Manager):
 
     def get_subject(self, request):
-        exec(f"return request.request_form{request.is_authority}_requested_by")
+        if request.is_authority == 0: 
+            return request.request_form0_requested_by
+        elif request.is_authority == 1:
+            return request.request_form1_requested_by
+        return None
+    
+
+
 
 
 class AbstractCase(models.Model):
