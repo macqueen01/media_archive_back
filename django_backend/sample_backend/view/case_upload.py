@@ -300,7 +300,8 @@ def video(request):
 
         new_video_case.save()
 
-        return Response({'message': 'Files has been recieved'})
+        return Response({'message': 'Files has been recieved'},
+            status = status.HTTP_200_OK)
 
 
     return Response({'message': ""})

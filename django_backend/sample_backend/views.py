@@ -11,7 +11,7 @@ from django.conf import settings
 
 from .models import *
 from .serializer import *
-from .view import case_browse, case_upload, utilities, user_control, request_processing
+from .view import case_browse, case_upload, utilities, user_control, request_processing, open_request
 
 
 class UserListAPI(APIView):
@@ -21,12 +21,13 @@ class UserListAPI(APIView):
         return Response(serializer.data)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminUser])
 def image_case_create_view(request):
     return case_upload.image(request)
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+# permission blocks file from being uploaded...
+@permission_classes([IsAdminUser])
 def video_case_create_view(request):
     return case_upload.video(request)
 
@@ -41,12 +42,16 @@ def case_browse_view(request, form):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def case_browse_detail(request, form, id):
+def case_detail_view(request):
+    id = int(request.query_params['id'][0])
+    form = int(request.query_params['form'][0])
     return case_browse.detail(request, form, id)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def browse_process(request):
+    # browses conversion process
     if request.method == "GET":
         print(settings.PROCESS_STATUS)
         return Response({'message': 'process status in terminal', 'status': settings.PROCESS_STATUS.__repr__()})
@@ -77,7 +82,8 @@ def resolve_user_request(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def open_user_request(request):
-    pass
+    return open_request.open_request(request)
+
 
 
 

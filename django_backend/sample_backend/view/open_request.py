@@ -19,13 +19,13 @@ from .utilities import get_user_from_token, case_id_map_parser
 def open_request(request):
     if request.method == "POST":
         request_form = request.data['request_form']
-        token = request.META.get('HTTP_AUTHORIZATION')
+        _, token = request.META.get('HTTP_AUTHORIZATION').split(' ')
         user = get_user_from_token(token)
 
-        if request_form == 0:
+        if request_form == 1:
             return open_authority_request(user, request)
-        elif request_form == 1:
-            return open_access_request()
+        elif request_form == 0:
+            return open_access_request(user, request)
         
         return Response({"message": "wrong request form sent. aborted."},
             status = status.HTTP_400_BAD_REQUEST)

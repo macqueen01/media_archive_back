@@ -85,7 +85,7 @@ def check_user_level(user):
         return False
 
 def case_id_map_parser(request):
-    image_cases = request.data['image_case']
+    image_cases = request.data['image_cases']
     video_cases = request.data['video_cases']
     doc_cases = request.data['doc_cases']
 
@@ -101,3 +101,17 @@ def case_id_map_parser(request):
         case_id_map[2] = doc_cases
 
     return case_id_map
+
+def authority_check(case, user):
+    case_form = case.form
+    if case_form == 0:
+        user_lst = case.form0_accessed_by.all()
+    elif case_form == 1:
+        user_lst = case.form1_accessed_by.all()
+    elif case_form == 2:
+        user_lst = case.form2_accessed_by.all()
+    else:
+        return False
+    
+    if (user in user_lst) or (user.is_staff):
+        return True

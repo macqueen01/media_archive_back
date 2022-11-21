@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import exceptions
+from rest_framework import exceptions, status
 from rest_framework.pagination import PageNumberPagination
 from drf_multiple_model.pagination import MultipleModelLimitOffsetPagination
 from drf_multiple_model.views import FlatMultipleModelAPIView
@@ -18,6 +18,7 @@ import subprocess
 from sample_backend.models import *
 from sample_backend.serializer import *
 from django.utils import timezone
+from .utilities import get_user_from_token, authority_check
 
 
 def main(request, form):
@@ -44,26 +45,33 @@ def main(request, form):
 
 def detail(request, form, id):
     form = form
-    key = id 
+    key = id
+    _, token = request.META.get('HTTP_AUTHORIZATION').split(' ')
+    print(token)
     if request.method == 'GET':
-        try:
-            if (form == 0):
-                browse_object = ImageCase.objects.filter(id__exact = key)
-                serializer = ImageCaseSerializer
-            elif (form == 1):
-                browse_object = VideoCase.objects.filter(id__exact = key)
-                serializer = VideoCaseSerializer
-            elif (form == 2):
-                browse_object = DocCase.objects.filter(id__exact = key)
-                serializer = VideoCaseSerializer
-            else:
-                return Response({'message': 'The file type requested cannot be browsed', 'code': 0})
-            
-            if (not browse_object.exists()):
-                return Response({'message': 'The file with given id does not exist', 'code': 0})
-            else:
-                result = serializer(browse_object.get())
-                return Response(result.data)
+        if (form == 0):
+            browse_object = ImageCase.objects.filter(id__exact = key)
+            serializer = ImageCaseSerializer
+        elif (form == 1):
+            browse_object = VideoCase.objects.filter(id__exact = key)
+            serializer = VideoCaseSerializer
+        elif (form == 2):
+            browse_object = DocCase.objects.filter(id__exact = key)
+            serializer = VideoCaseSerializer
+        else:
+            return Response({'message': 'The file type requested cannot be browsed'},
+                status = status.HTTP_400_BAD_REQUEST)
+        
+        if (not browse_object.exists()):
+            return Response({'message': 'The file with given id does not exist'},
+                status = status.HTTP_410_GONE)
+        
+        if authority_check(browse_object.get(), get_user_from_token(token)):
+            result = serializer(browse_object.get())
+            return Response(result.data)
 
-        except:
-            return Response({'message': 'The file type has not submitted', 'code': 0})
+        return Response({'message': 'User has no authority to the case'},
+            status = status.HTTP_401_UNAUTHORIZED)
+
+    return Response({'message': "wrong method call"},
+        status = status.HTTP_405_METHOD_NOT_ALLOWED)

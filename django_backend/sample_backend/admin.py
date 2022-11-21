@@ -14,6 +14,7 @@ admin.site.register(ImageCase)
 admin.site.register(AccessRequest)
 admin.site.register(AccessRequestComponent)
 admin.site.register(AuthorityRequest)
+admin.site.register(Message)
 
 
 
