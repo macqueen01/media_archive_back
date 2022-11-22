@@ -10,6 +10,7 @@ class CaseManager(models.Manager):
         # this gets users with current permission
         if status == 1:
             exec(f"case.form{case.form}_accessed_by.add(user)")
+            case.save()
             return False
         else:
             return True

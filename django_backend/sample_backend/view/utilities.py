@@ -17,7 +17,6 @@ import os
 import subprocess
 
 from sample_backend.models import *
-from sample_backend.serializer import *
 from django.utils import timezone
 from knox.settings import CONSTANTS
 

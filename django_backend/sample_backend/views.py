@@ -11,7 +11,7 @@ from django.conf import settings
 
 from .models import *
 from .serializer import *
-from .view import case_browse, case_upload, utilities, user_control, request_processing, open_request
+from .view import case_browse, case_upload, utilities, user_control, request_processing, open_request, request_browse
 
 
 class UserListAPI(APIView):
@@ -26,7 +26,6 @@ def image_case_create_view(request):
     return case_upload.image(request)
 
 @api_view(['POST'])
-# permission blocks file from being uploaded...
 @permission_classes([IsAdminUser])
 def video_case_create_view(request):
     return case_upload.video(request)
@@ -68,15 +67,16 @@ def login_user(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def check_status(request):
-    return Response(
-        {'message': 'User already logged in',
-         'code': 200}
+    return Response({'message': 'User already logged in'},
+        status = status.HTTP_200_OK
     )
 
 @api_view(['POST'])
 @permission_classes([IsAdminUser])
 def resolve_user_request(request):
+    # This should return new request array user can browse
     return request_processing.process_request(request)
+
 
 
 @api_view(['POST'])
@@ -96,30 +96,6 @@ class ResponseThen(Response):
         super().close()
         self.then_callback()
 
-"""
-
-class LimitPagination(MultipleModelLimitOffsetPagination):
-    default_limit = 12
-
-class BrowseCaseAPIView(FlatMultipleModelAPIView):
-    pagination_class = LimitPagination
-    add_model_type = True
-    sorting_fields = ['created_at']
-
-    def get_querylist(self):
-
-        image_case_to_join = ImageCase.objects.all()
-        video_case_to_join = VideoCase.objects.all()
-
-        # un_sorted_queryset = activity_serializer.data + team_serializer.data + team_player_left_serializer.data
-
-        querylist = (
-            {'queryset': image_case_to_join.distinct(), 'serializer_class': ImageCaseSerializer},
-            {'queryset': video_case_to_join.distinct(), 'serializer_class': VideoCaseSerializer},
-        )
-
-        return querylist
-"""
 
 
 

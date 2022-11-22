@@ -6,6 +6,7 @@ from rest_framework import status
 
 from converter import Converter
 from django.conf import settings
+from sample_backend.model.abstractModels import CaseManager
 
 from sample_backend.models import *
 from sample_backend.serializer import *
@@ -41,7 +42,7 @@ def process_access_request(processor, permission_request_set, request):
     permission_request_obj = permission_request_set.get()
     request_subject = AccessRequest.objects.get_subject(permission_request_obj)
 
-    def content_by_status(user, case):
+    def content_by_status(user, case, status):
         if status == 0:
             return f"{user.name}님의 '{case.title}' 기록물 접근에 대한 요청이 거절되었습니다"
         elif status == 1:
@@ -51,37 +52,46 @@ def process_access_request(processor, permission_request_set, request):
 
 
     
-    # IMPORTANT! let permission pair for request.data['image_case'] be {'case_id': "permission_result"}
-    for request_component in permission_request_obj.request_components:
+    # IMPORTANT! let permission pair for request.data['image_case'] be {'case_id': "permission_result (status)"}
+    for request_component in permission_request_obj.request_components.all():
 
         case_form = request_component.requesting_case_form
 
-        if (case_form == 0) and (status := request.data['image_case'][f'{case.id}'] in [0,1,2]):
+        if (case_form == 0):
 
             case = request_component.image_case
-            request_component.status = status
-            Message.send(
+            case_manager = ImageCase.objects
+            request_component.status = int(request.data['image_case'][f'{case.id}'])
+            request_component.save()
+
+            Message.objects.send(
                 sender = processor,
                 receiver_set = request_subject,
-                content = content_by_status(request_subject, case)
+                content = content_by_status(request_subject, case, request_component.status)
             )
 
             
-        elif (case_form == 1) and (status := request.data['video_case'][f'{case.id}'] in [0,1,2]):
+        elif (case_form == 1):
 
             case = request_component.video_case
-            request_component.status = status
-            Message.send(
+            case_manager = VideoCase.objects
+            request_component.status = int(request.data['video_case'][f'{case.id}'])
+            request_component.save()
+
+            Message.objects.send(
                 sender = processor,
                 receiver_set = request_subject,
                 content = content_by_status(request_subject, case)
             )
 
-        elif (case_form == 2) and (status := request.data['doc_case'][f'{case.id}'] in [0,1,2]):
+        elif (case_form == 2):
 
             case = request_component.doc_case
-            request_component.status = status
-            Message.send(
+            case_manager = DocCase.objects
+            request_component.status = int(request.data['doc_case'][f'{case.id}'])
+            request_component.save()
+
+            Message.objects.send(
                 sender = processor,
                 receiver_set = request_subject,
                 content = content_by_status(request_subject, case)
@@ -93,8 +103,11 @@ def process_access_request(processor, permission_request_set, request):
         
         # permission object status always set "accpeted" so that
         # when displayed in request view, the processed permission request is not shown
-        permission_request_obj.status = 1
-        AccessRequestComponent.objects.grant_permission_to(case, request_subject, request_component.status)
+
+        case_manager.grant_permission_to(case, request_subject, request_component.status)
+        
+    permission_request_obj.status = 1
+    permission_request_obj.save()
     
     return Response({'message': "user access request resolved"},
         status = status.HTTP_200_OK)
@@ -114,7 +127,7 @@ def process_authority_request(processor, permission_request_set, request):
 
     # when request accepted
 
-    if (request.data['status'] == 1):
+    if (int(request.data['status']) == 1):
 
         permission_request_obj.status = 1
 
@@ -127,7 +140,7 @@ def process_authority_request(processor, permission_request_set, request):
             request_subject.is_active = 1
 
             # should then construct a message for request_subject's inbox
-            Message.send(
+            Message.objects.send(
                 sender = processor,
                 receiver_set = request_subject,
                 content =f"{request_subject.name}님의 계정이 활성화 되었습니다"
@@ -138,7 +151,7 @@ def process_authority_request(processor, permission_request_set, request):
             request_subject.is_active = 1
             request_subject.is_staff = 1
         
-            Message.send(
+            Message.objects.send(
                 sender = processor,
                 receiver_set = request_subject,
                 content =f"{request_subject.name}님의 계정이 관리자로 승격 되었습니다"
@@ -146,9 +159,10 @@ def process_authority_request(processor, permission_request_set, request):
         
         else:
             permission_request_obj.status = 0
+            permission_request_obj.save()
 
             # message object sent with rejection status
-            Message.send(
+            Message.objects.send(
                 sender = processor,
                 receiver_set = request_subject,
                 content =f"{request_subject.name}님의 요정에 문제가 있습니다"
@@ -157,13 +171,19 @@ def process_authority_request(processor, permission_request_set, request):
             return Response({"message": "authority renew request was sent with invalid authority level"},
                 status = status.HTTP_501_NOT_IMPLEMENTED)
         
+        permission_request_obj.save()
+        request_subject.save()
 
-    elif (request.data['status'] == 0):
+        return Response({"message": "Authority renew has been successful"},
+            status = status.HRRP_200_OK)
+
+    elif (int(request.data['status']) == 0):
 
         permission_request_obj.status = 0
+        permission_request_obj.save()
         
         # should make a message object with rejection status (status == 0)
-        Message.send(
+        Message.objects.send(
                 sender = processor,
                 receiver_set = request_subject,
                 content =f"{request_subject.name}님의 권한변경 요정이 거절되었습니다"
@@ -172,9 +192,10 @@ def process_authority_request(processor, permission_request_set, request):
         return Response({"message": "successfully rejected the request"},
             status = status.HTTP_200_OK)
         
-    elif (request.data['status'] == 2):
+    elif (int(request.data['status']) == 2):
 
         permission_request_obj.status = 2
+        permission_request_obj.save()
 
         return Response({"message": "successfully pended the request"},
             status = status.HTTP_200_OK)

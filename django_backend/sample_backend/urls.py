@@ -13,6 +13,7 @@ urlpatterns = [
     path('user/login', login_user),
     path('user/check-status', check_status),
     path('request/resolve', resolve_user_request),
-    path('request/open', open_user_request)
+    path('request/open', open_user_request),
+    path('request/browse', request_browse.BrowseRequestAPIView.as_view())
     #path('cases/browse/<int:id>', browse_detail_view)
 ]
