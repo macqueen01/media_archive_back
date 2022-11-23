@@ -41,8 +41,8 @@ def image(request):
         location = request.data['location']
         affiliation = request.data['affiliation']
 
-        if (fetched := Personel.objects.filter(title__exact = associate)).exists():
-            associate = fetched.get()
+        if (Personel.objects.filter(title__exact = associate)).exists():
+            associate = Personel.objects.filter(title__exact = associate).get()
         else:
             new_personel = Personel(
                 title = associate,
@@ -56,8 +56,8 @@ def image(request):
             new_personel.save()
             associate = new_personel
         
-        if (fetched := Location.objects.filter(title__exact = location)).exists():
-            location = fetched.get()
+        if (Location.objects.filter(title__exact = location)).exists():
+            location = Location.objects.filter(title__exact = location).get()
         else:
             new_location = Location(
                 title = location,
@@ -68,8 +68,8 @@ def image(request):
             new_location.save()
             location = new_location
         
-        if (fetched := Location.objects.filter(title__exact = affiliation)).exists():
-            affiliation = fetched.get()
+        if (Location.objects.filter(title__exact = affiliation)).exists():
+            affiliation = Location.objects.filter(title__exact = affiliation).get()
         else:
             new_location = Location(
                 title = location,
@@ -94,8 +94,8 @@ def image(request):
 
         
         for person in attendee_list:
-            if (fetched := Personel.objects.filter(title__exact = person)).exists():
-                new_image_case.attendee.add(fetched.get())
+            if (Personel.objects.filter(title__exact = person)).exists():
+                new_image_case.attendee.add(Personel.objects.filter(title__exact = person).get())
             else:
                 new_personel = Personel(
                     title = person,
@@ -112,8 +112,8 @@ def image(request):
         
 
 
-        if (last_index := int(request.data['file_index'])) != -1:
-            for i in range(last_index + 1):
+        if (int(request.data['file_index'])) != -1:
+            for i in range(int(request.data['file_index']) + 1):
                 file = request.data[f'{i}']
                 file_name = file.name
                 file_obj = file
@@ -155,8 +155,8 @@ def video(request):
         location = request.data['location']
         affiliation = request.data['affiliation']
 
-        if (fetched := Personel.objects.filter(title__exact = associate)).exists():
-            associate = fetched.get()
+        if (Personel.objects.filter(title__exact = associate)).exists():
+            associate = Personel.objects.filter(title__exact = associate).get()
         else:
             new_personel = Personel(
                 title = associate,
@@ -170,8 +170,8 @@ def video(request):
             new_personel.save()
             associate = new_personel
         
-        if (fetched := Location.objects.filter(title__exact = location)).exists():
-            location = fetched.get()
+        if (Location.objects.filter(title__exact = location)).exists():
+            location = Location.objects.filter(title__exact = location).get()
         else:
             new_location = Location(
                 title = location,
@@ -182,8 +182,8 @@ def video(request):
             new_location.save()
             location = new_location
         
-        if (fetched := Location.objects.filter(title__exact = affiliation)).exists():
-            affiliation = fetched.get()
+        if (Location.objects.filter(title__exact = affiliation)).exists():
+            affiliation = Location.objects.filter(title__exact = affiliation).get()
         else:
             new_location = Location(
                 title = location,
@@ -208,8 +208,8 @@ def video(request):
 
         
         for person in attendee_list:
-            if (fetched := Personel.objects.filter(title__exact = person)).exists():
-                new_video_case.attendee.add(fetched.get())
+            if (Personel.objects.filter(title__exact = person)).exists():
+                new_video_case.attendee.add(Personel.objects.filter(title__exact = person).get())
             else:
                 new_personel = Personel(
                     title = person,
@@ -226,8 +226,8 @@ def video(request):
     
 
 
-        if (last_index := int(request.data['file_index'])) != -1:
-            for i in range(last_index + 1):
+        if (int(request.data['file_index'])) != -1:
+            for i in range(int(request.data['file_index']) + 1):
                 file = request.data[f'{i}']
                 file_name, file_extension = os.path.splitext(file.name)
                 file_obj = file

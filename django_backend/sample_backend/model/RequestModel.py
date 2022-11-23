@@ -16,8 +16,8 @@ class AuthorityRequestManager(abstractModels.RequestManager):
         auth_to
         ):
 
-        if (level := check_user_level(user)) and (auth_to in [0,1,2]):
-            auth_from = level
+        if (check_user_level(user)) and (auth_to in [0,1,2]):
+            auth_from = check_user_level(user)
         else:
             return False
 

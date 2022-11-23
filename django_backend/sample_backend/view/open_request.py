@@ -33,7 +33,7 @@ def open_request(request):
         status = status.HTTP_405_METHOD_NOT_ALLOWED)
 
 def open_authority_request(user, request):
-    if result := AuthorityRequest.objects.open_request(
+    if AuthorityRequest.objects.open_request(
         user = user,
         title = request.data['title'],
         comments = request.data['comments'],

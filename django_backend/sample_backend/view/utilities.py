@@ -24,7 +24,8 @@ from knox.settings import CONSTANTS
 def codec_check(request):
     if request.method == 'POST':
         codecs = []
-        if (last_index := int(request.data['file_index'])) != -1:
+        last_index = int(request.data['file_index'])
+        if last_index != -1:
             for i in range(last_index + 1):
                 file = request.data[f'{i}']
                 file_name = file.name
