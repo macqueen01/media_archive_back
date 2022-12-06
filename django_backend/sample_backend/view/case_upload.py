@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import exceptions
+from rest_framework import exceptions, status
 from rest_framework.pagination import PageNumberPagination
 from drf_multiple_model.pagination import MultipleModelLimitOffsetPagination
 from drf_multiple_model.views import FlatMultipleModelAPIView
@@ -129,9 +129,11 @@ def image(request):
                 new_image_media.referenced_in.add(new_image_case)
                 new_image_media.save()
 
+        new_image_case.uploaded = 1
         new_image_case.save()
 
-        return Response({'message': "file recieved successfully "})
+        return Response({'message': "file recieved successfully"}, 
+            status = status.HTTP_200_OK)
 
 
     return Response({'message': ""})
@@ -225,7 +227,10 @@ def video(request):
                 
     
 
-
+        # frontend parses file_index = -1 if file uploading process meets an error
+        # this should be documented in detail.
+        # Problem rises when the server (backend) doesn't read any file, especially indirectly reading large files
+        # from CD. 
         if (int(request.data['file_index'])) != -1:
             for i in range(int(request.data['file_index']) + 1):
                 file = request.data[f'{i}']
@@ -250,11 +255,11 @@ def video(request):
                 thumbnail_url = os.path.join(settings.ARCHIVE_ROOT, f'{date}/thumbnail/{file_name}.jpg')
 
                 try:
-                    status = settings.PROCESS_STATUS[file_name] = {'encoding': True,
+                    process_status = settings.PROCESS_STATUS[file_name] = {'encoding': True,
                                                                    'started_at': timezone.now(),
                                                                    'ended_at': None}
                     
-                    print(f"{file_name}'s encoding process started at {status['started_at']}%")
+                    print(f"{file_name}'s encoding process started at {process_status['started_at']}%")
 
                     encoding_processor = subprocess.Popen(
                         f"python3 ./sample_backend/VideoProcessors/videoconverter.py '{video_url}' '{new_url}' '{file_name}'",
@@ -266,11 +271,13 @@ def video(request):
                     try:
                         outs, errors = encoding_processor.communicate()
                         settings.PROCESS_STATUS[file_name] = {'encoding': False,
-                              'started_at': status['started_at'],
+                              'started_at': process_status['started_at'],
                               'ended_at': timezone.now()}
                         print(f"{file_name}'s encoding process ended at {settings.PROCESS_STATUS[file_name]['ended_at']}%")
+
                     except:
                         encoding_processor.kill()
+
 
                     thumbnail_processor = subprocess.Popen(
                         f"python3 ./sample_backend/VideoProcessors/thumbnail_generator.py '{new_url}' '{thumbnail_url}'",
@@ -291,17 +298,28 @@ def video(request):
                     except:
                         thumbnail_processor.kill()
 
+
                 except:
                     print("Error occurred in codec conversion")
                     if os.path.exists(new_url):
                         os.remove(new_url)
                         print(f"{new_url} file removed successfully")
+                        # revert uploading process
+                        # deletes both case and media 
+                        # when any singe error rises during uploading
                     new_video_media.delete()
+                    new_video_media.delete()
+                    return Response({"message": "error occured during encoding"},
+                        status = status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+        new_video_case.uploaded = 1
         new_video_case.save()
 
         return Response({'message': 'Files has been recieved'},
             status = status.HTTP_200_OK)
 
 
-    return Response({'message': ""})
+    return Response({'message': "wrong method call"},
+        status = status.HTTP_405_METHOD_NOT_ALLOWED)
+
+

@@ -33,7 +33,7 @@ def main(request, form):
             case_obj = DocCase
             serializer_class = VideoCaseSerializer
 
-        browse_cases = case_obj.objects.all().order_by('-created_at')
+        browse_cases = case_obj.objects.filter(uploaded__exact = 1).order_by('-created_at')
 
         paginator = PageNumberPagination()
         paginator.page_size = 12

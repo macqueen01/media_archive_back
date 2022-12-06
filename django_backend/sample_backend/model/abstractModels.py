@@ -57,6 +57,15 @@ class AbstractCase(models.Model):
     content = models.TextField()
     private = models.IntegerField()
 
+    # UPLOADED is an indicator of whether the case is being uploaded or done uploading.
+    # This will be updated at the end of the uploading process.
+    # All cases other then Image, Video, and Doc cases will have 0 in the property
+    # so to ensure they will never appear in the browsing page.
+
+    uploaded = models.IntegerField(default = 0)
+
+
+
     objects = CaseManager()
 
     class Meta:
