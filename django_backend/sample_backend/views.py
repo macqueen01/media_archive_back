@@ -11,7 +11,7 @@ from django.conf import settings
 
 from .models import *
 from .serializer import *
-from .view import case_browse, case_upload, utilities, user_control, request_processing, open_request, request_browse
+from .view import case_browse, case_upload, utilities, user_control, user_browse, request_processing, open_request, request_browse
 
 
 class UserListAPI(APIView):
@@ -64,12 +64,29 @@ def create_user(request):
 def login_user(request):
     return user_control.login_user(request)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout_user(request):
+    return user_control.logout_user(request)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def browse_single_user(request):
+    return user_browse.single_user(request)
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def check_status(request):
     return Response({'message': 'User already logged in'},
         status = status.HTTP_200_OK
     )
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def browse_single_request(request):
+    request_id = int(request.query_params['id'][0])
+    request_form = int(request.query_params['form'][0])
+    return request_browse.single_request(request, request_id, request_form)
 
 @api_view(['POST'])
 @permission_classes([IsAdminUser])

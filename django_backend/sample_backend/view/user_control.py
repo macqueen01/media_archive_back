@@ -19,6 +19,7 @@ from sample_backend.models import *
 from sample_backend.serializer import *
 from django.utils import timezone
 from knox.settings import CONSTANTS
+from .utilities import get_user_from_token
 
 def get_user_from_token(token):
     objs = AuthToken.objects.filter(token_key=token[:CONSTANTS.TOKEN_KEY_LENGTH])
@@ -57,3 +58,16 @@ def login_user(request):
         )
     return Response({"message": "wrong method call on login"},
         status = status.HTTP_405_METHOD_NOT_ALLOWED)
+
+def logout_user(request):
+    _, token = request.META.get('HTTP_AUTHORIZATION').split(' ')
+    if request.method == 'POST':
+        try:
+            user = get_user_from_token(token)
+            print(user)
+            user.auth_token_set.all().delete()
+            return Response({"message": "User logged out"},
+                status = status.HTTP_200_OK)
+        except:
+            return Response({"message": "Token removal error"},
+                status = status.HTTP_404_NOT_FOUND)

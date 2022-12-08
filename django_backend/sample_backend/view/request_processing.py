@@ -20,7 +20,7 @@ def process_request(request):
     if request.method == 'POST':
         request_form = request.data['request_form']
         request_id = request.data['request_id']
-        token = request.META.get('HTTP_AUTHORIZATION')
+        _, token = request.META.get('HTTP_AUTHORIZATION').split(' ')
         processor = get_user_from_token(token)
 
         if request_form == 0:

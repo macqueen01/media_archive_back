@@ -36,3 +36,21 @@ class BrowseRequestAPIView(FlatMultipleModelAPIView):
         )
 
         return querylist
+
+def single_request(request, request_id, request_form):
+    if request.method == "GET":
+        if request_form == 0:
+            request_model = AccessRequest
+            request_serializer = AccessRequestSerializer
+        elif request_form == 1:
+            request_model = AuthorityRequest
+            request_serializer = AuthorityRequestSerializer
+        try:
+            request_obj = request_model.objects.get(id = request_id)
+            serialized_request = request_serializer(request_obj).data
+            return Response(serialized_request, status = status.HTTP_200_OK)
+        except:
+            return Response({"message": "Request object with given id doesn't exists"},
+                status = status.HTTP_404_NOT_FOUND)
+    return Response({"message": "wrong method call"},
+        status = status.HTTP_405_METHOD_NOT_ALLOWED)
