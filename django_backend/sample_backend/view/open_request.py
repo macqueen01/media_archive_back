@@ -48,6 +48,7 @@ def open_authority_request(user, request):
 
 def open_access_request(user, request):
     case_id_map = case_id_map_parser(request)
+    print(case_id_map)
     AccessRequest.objects.open_request(
         user = user,
         title = request.data['title'],

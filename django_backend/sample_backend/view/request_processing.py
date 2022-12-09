@@ -81,7 +81,7 @@ def process_access_request(processor, permission_request_set, request):
             Message.objects.send(
                 sender = processor,
                 receiver_set = request_subject,
-                content = content_by_status(request_subject, case)
+                content = content_by_status(request_subject, case, request_component.status)
             )
 
         elif (case_form == 2):
@@ -94,7 +94,7 @@ def process_access_request(processor, permission_request_set, request):
             Message.objects.send(
                 sender = processor,
                 receiver_set = request_subject,
-                content = content_by_status(request_subject, case)
+                content = content_by_status(request_subject, case, request_component.status)
             )
 
         else:

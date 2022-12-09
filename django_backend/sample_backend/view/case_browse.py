@@ -40,7 +40,8 @@ def main(request, form):
         result_page = paginator.paginate_queryset(browse_cases, request)
         serializer = serializer_class(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
-    return Response({'message': "wrong method call"})
+    return Response({'message': "wrong method call"}, 
+        status = status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 def detail(request, form, id):

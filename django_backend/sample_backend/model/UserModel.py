@@ -4,12 +4,13 @@ from django.contrib.auth.models import BaseUserManager
 from django.utils import timezone
 
 class UserManager(BaseUserManager):
-    def create_user(self, username, name, password, position, standing):
+    def create_user(self, username, name, password, position, standing, affiliation):
         user = self.model(
             name = name,
             username = username,
             position = position,
             standing = standing,
+            affiliation = affiliation,
             created_at = timezone.now(),
             is_staff = 0,
             is_superuser = 0,
@@ -20,13 +21,14 @@ class UserManager(BaseUserManager):
         user.save(using = self._db)
         return user
     
-    def create_superuser(self, username, name, password, position, standing):
+    def create_superuser(self, username, name, password, position, standing, affiliation):
         user = self.create_user(
             name = name,
             username = username,
             password = password,
             position = position,
             standing = standing,
+            affiliation = affiliation
         )
 
         user.is_superuser = 1
@@ -42,6 +44,7 @@ class User(AbstractBaseUser):
     name = models.CharField(max_length = 20)
     position = models.CharField(max_length = 20)
     standing = models.CharField(max_length = 20)
+    affiliation = models.CharField(max_length = 100, default="없음")
     last_login = models.DateTimeField(blank = True, null = True)
     created_at = models.DateTimeField()
     is_superuser = models.IntegerField(blank = True, null = True)
@@ -51,7 +54,7 @@ class User(AbstractBaseUser):
     objects = UserManager()
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['name', 'position', 'standing']
+    REQUIRED_FIELDS = ['name', 'position', 'standing', 'affiliation']
 
     def has_perm(self, perm, obj = None):
         return True

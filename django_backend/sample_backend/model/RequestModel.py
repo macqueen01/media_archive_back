@@ -78,7 +78,7 @@ class AccessRequestManager(abstractModels.RequestManager):
 
         # IMPORTANT! this model method doesn't undo when error 
         # occurs inside request component creation. 
-        # This really needs an implementation for try and catch
+        # This really needs an implementation for try and except
 
         request = self.model(
             request_form0_requested_by = user,
@@ -107,7 +107,7 @@ class AccessRequestManager(abstractModels.RequestManager):
                 for id in video_cases:
                     case = CaseModel.VideoCase.objects.filter(id = id).get()
                     request_comp = AccessRequestComponent(
-                        requesting_case_form = 0,
+                        requesting_case_form = 1,
                         video_case = case
                     )
                     request_comp.save()
@@ -119,7 +119,7 @@ class AccessRequestManager(abstractModels.RequestManager):
                 for id in doc_cases:
                     case = CaseModel.DocCase.objects.filter(id = id).get()
                     request_comp = AccessRequestComponent(
-                        requesting_case_form = 0,
+                        requesting_case_form = 2,
                         doc_case = case
                     )
                     request_comp.save()

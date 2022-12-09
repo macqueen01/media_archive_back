@@ -13,7 +13,8 @@ class CreateUserSerializer(serializers.ModelSerializer):
             "position",
             "standing",
             "name",
-            "password"
+            "password",
+            "affiliation"
         )
 
         extra_kwargs = {'password': {"write_only": True}}
@@ -31,7 +32,8 @@ class UserSerializer(serializers.ModelSerializer):
             "id",
             "position",
             "standing",
-            "name"
+            "name",
+            "affiliation"
         )
 
 class LoginSerializer(serializers.Serializer):

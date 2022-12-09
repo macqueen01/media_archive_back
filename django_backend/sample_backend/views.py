@@ -88,6 +88,13 @@ def browse_single_request(request):
     request_form = int(request.query_params['form'][0])
     return request_browse.single_request(request, request_id, request_form)
 
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def search_users(request):
+    if search_params := request.query_params['keyword']:
+        return user_browse.search_user(request)
+    return user_browse.every_user(request)
+
 @api_view(['POST'])
 @permission_classes([IsAdminUser])
 def resolve_user_request(request):

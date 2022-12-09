@@ -36,3 +36,19 @@ def single_user(request):
     return Response({"message": "wrong method call"},
         stauts = status.HTTP_405_METHOD_NOT_ALLOWED)
 
+def search_user(request):
+    # Search with parameters
+    # will be implemented
+    pass
+
+def every_user(request):
+    if request.method == 'GET':
+        users = User.objects.all().order_by('id')
+        paginator = PageNumberPagination()
+        paginator.page_size = 12
+        result_page = paginator.paginate_queryset(users, request)
+        serializer = UserSerializer(result_page, many = True)
+        return paginator.get_paginated_response(serializer.data)
+    return Response({'message': "wrong method call"}, 
+        status = status.HTTP_405_METHOD_NOT_ALLOWED)
+
