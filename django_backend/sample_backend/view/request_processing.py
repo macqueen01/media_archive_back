@@ -175,7 +175,7 @@ def process_authority_request(processor, permission_request_set, request):
         request_subject.save()
 
         return Response({"message": "Authority renew has been successful"},
-            status = status.HRRP_200_OK)
+            status = status.HTTP_200_OK)
 
     elif (int(request.data['status']) == 0):
 

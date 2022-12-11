@@ -14,10 +14,11 @@ class CreateUserSerializer(serializers.ModelSerializer):
             "standing",
             "name",
             "password",
-            "affiliation"
+            "affiliation",
         )
 
         extra_kwargs = {'password': {"write_only": True}}
+
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
@@ -33,7 +34,8 @@ class UserSerializer(serializers.ModelSerializer):
             "position",
             "standing",
             "name",
-            "affiliation"
+            "affiliation",
+            "client_ip"
         )
 
 class LoginSerializer(serializers.Serializer):

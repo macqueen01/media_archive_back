@@ -11,7 +11,7 @@ urlpatterns = [
     path('cases/browse/status', browse_process),
     path('cases/codec', codec_check),
     path('user/info', browse_single_user),
-    path('user/create', create_user),
+    path('user/signin', create_user),
     path('user/search', search_users),
     path('user/login', login_user),
     path('user/logout', logout_user),

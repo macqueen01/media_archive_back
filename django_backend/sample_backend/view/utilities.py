@@ -81,6 +81,8 @@ def check_user_level(user):
     elif user.is_staff:
         # level of an inactive admin is still 2
         return 2
+    elif not user.is_active:
+        return 0
     else:
         return False
 

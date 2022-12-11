@@ -29,6 +29,7 @@ def get_user_from_token(token):
 
 def create_user(request):
     if request.method == 'POST':
+        client_ip = request.META.get("REMOTE_ADDR")
         if (len(request.data['username']) < 6) or (len(request.data['password']) < 6):
             message = {'message': "short field"}
             return Response(message, status = status.HTTP_400_BAD_REQUEST)
@@ -36,6 +37,18 @@ def create_user(request):
         serializer = CreateUserSerializer(data = request.data)
         serializer.is_valid(raise_exception = True)
         user = serializer.save()
+        user.client_ip = client_ip
+        user.save()
+
+        result = AuthorityRequest.objects.open_request(
+            user = user,
+            title = "회원가입 요청",
+            comments = "화원가입 요청 드립니다",
+            auth_from = 0,
+            auth_to = int(request.data['authority'])
+        )
+
+        print(result)
 
         return Response(
             {

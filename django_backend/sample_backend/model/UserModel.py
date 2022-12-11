@@ -4,7 +4,7 @@ from django.contrib.auth.models import BaseUserManager
 from django.utils import timezone
 
 class UserManager(BaseUserManager):
-    def create_user(self, username, name, password, position, standing, affiliation):
+    def create_user(self, username, name, password, position, standing, affiliation, client_ip = None):
         user = self.model(
             name = name,
             username = username,
@@ -12,6 +12,7 @@ class UserManager(BaseUserManager):
             standing = standing,
             affiliation = affiliation,
             created_at = timezone.now(),
+            client_ip = client_ip,
             is_staff = 0,
             is_superuser = 0,
             is_active = 0
@@ -21,14 +22,15 @@ class UserManager(BaseUserManager):
         user.save(using = self._db)
         return user
     
-    def create_superuser(self, username, name, password, position, standing, affiliation):
+    def create_superuser(self, username, name, password, position, standing, affiliation, client_ip = None):
         user = self.create_user(
             name = name,
             username = username,
             password = password,
             position = position,
             standing = standing,
-            affiliation = affiliation
+            affiliation = affiliation,
+            client_ip = client_ip
         )
 
         user.is_superuser = 1
@@ -44,6 +46,7 @@ class User(AbstractBaseUser):
     name = models.CharField(max_length = 20)
     position = models.CharField(max_length = 20)
     standing = models.CharField(max_length = 20)
+    client_ip = models.GenericIPAddressField(null = True)
     affiliation = models.CharField(max_length = 100, default="없음")
     last_login = models.DateTimeField(blank = True, null = True)
     created_at = models.DateTimeField()
