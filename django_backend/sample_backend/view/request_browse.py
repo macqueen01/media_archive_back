@@ -46,7 +46,7 @@ def single_request(request, request_id, request_form):
             request_model = AuthorityRequest
             request_serializer = AuthorityRequestSerializer
         try:
-            request_obj = request_model.objects.get(id = request_id)
+            request_obj = request_model.objects.get(id__exact = request_id)
             serialized_request = request_serializer(request_obj).data
             return Response(serialized_request, status = status.HTTP_200_OK)
         except:

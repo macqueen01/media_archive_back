@@ -91,8 +91,8 @@ def check_status(request):
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
 def browse_single_request(request):
-    request_id = int(request.query_params['id'][0])
-    request_form = int(request.query_params['form'][0])
+    request_id = int(request.query_params['id'])
+    request_form = int(request.query_params['form'])
     return request_browse.single_request(request, request_id, request_form)
 
 @api_view(['GET'])
