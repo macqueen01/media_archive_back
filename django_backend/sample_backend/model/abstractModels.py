@@ -25,6 +25,15 @@ class CaseManager(models.Manager):
             return case.form.form2_accessed_by
         else: 
             return False
+    
+    def count_total_cases(self, hidden = False):
+        if hidden:
+            uploaded = 0
+        else: 
+            uploaded = 1
+
+        total = self.filter(uploaded__exact = uploaded).count()
+        return total
 
 class RequestManager(models.Manager):
 

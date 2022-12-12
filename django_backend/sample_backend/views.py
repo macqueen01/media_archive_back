@@ -11,7 +11,9 @@ from django.conf import settings
 
 from .models import *
 from .serializer import *
-from .view import case_browse, case_upload, utilities, user_control, user_browse, request_processing, open_request, request_browse
+from .view import case_browse, case_upload, utilities, \
+                  user_control, user_browse, request_processing, \
+                  open_request, request_browse, statistics
 
 
 class UserListAPI(APIView):
@@ -19,6 +21,11 @@ class UserListAPI(APIView):
         queryset = User.objects.all()
         serializer = UserSerializer(queryset, many = True)
         return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def case_count(request):
+    return statistics.count_cases(request)
 
 @api_view(['POST'])
 @permission_classes([IsAdminUser])

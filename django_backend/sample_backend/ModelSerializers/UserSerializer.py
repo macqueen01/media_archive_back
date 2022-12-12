@@ -35,7 +35,10 @@ class UserSerializer(serializers.ModelSerializer):
             "standing",
             "name",
             "affiliation",
-            "client_ip"
+            "client_ip",
+            "created_at",
+            "is_staff",
+            "is_active"
         )
 
 class LoginSerializer(serializers.Serializer):

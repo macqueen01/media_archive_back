@@ -4,6 +4,7 @@ from knox import views
 
 urlpatterns = [
     path('', UserListAPI.as_view()),
+    path('statistics/case-count', case_count),
     path('cases/create/0', image_case_create_view),
     path('cases/create/1', video_case_create_view),
     path('cases/browse/<int:form>', case_browse_view),
