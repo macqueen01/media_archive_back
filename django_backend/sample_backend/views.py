@@ -48,9 +48,16 @@ def case_browse_view(request, form):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def case_title_view(request):
+    id = int(request.query_params['id'])
+    form = int(request.query_params['form'])
+    return case_browse.get_case_title(request, form, id)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def case_detail_view(request):
-    id = int(request.query_params['id'][0])
-    form = int(request.query_params['form'][0])
+    id = int(request.query_params['id'])
+    form = int(request.query_params['form'])
     return case_browse.detail(request, form, id)
 
 
@@ -84,9 +91,7 @@ def browse_single_user(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def check_status(request):
-    return Response({'message': 'User already logged in'},
-        status = status.HTTP_200_OK
-    )
+    return user_browse.single_user(request)
 
 @api_view(['GET'])
 @permission_classes([IsAdminUser])

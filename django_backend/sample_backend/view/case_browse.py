@@ -76,3 +76,17 @@ def detail(request, form, id):
 
     return Response({'message': "wrong method call"},
         status = status.HTTP_405_METHOD_NOT_ALLOWED)
+
+def get_case_title(request, form, id):
+    if request.method == 'GET':
+        if (form == 0):
+            browse_object = ImageCase.objects.filter(id__exact = id)
+        elif (form == 1):
+            browse_object = VideoCase.objects.filter(id__exact = id)
+        elif (form == 2):
+            browse_object = DocCase.objects.filter(id__exact = id)
+        return Response({
+            'title': browse_object.get().title
+        }, status = status.HTTP_200_OK)
+    return Response({'message': "wrong method call"},
+        status = status.HTTP_405_METHOD_NOT_FOUND)
