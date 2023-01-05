@@ -33,9 +33,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-PROCESS_STATUS = {}
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -46,10 +43,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'sample_backend',
+    'search',
     'rest_framework',
+    'django_elasticsearch_dsl',
     'corsheaders',
     'drf_multiple_model',
-    'knox'
+    'knox',
+    'drf_api_logger'
 ]
 
 MIDDLEWARE = [
@@ -62,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'drf_api_logger.middleware.api_logger_middleware.APILoggerMiddleware'
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -97,6 +98,11 @@ DATABASES = {
     }
 }
 
+# Django Rest Framework API Logger
+
+DRF_API_LOGGER_DATABASE = True
+DRF_API_LOGGER_SIGNAL = True
+
 # Rest framework
 
 REST_FRAMEWORK = {
@@ -110,6 +116,14 @@ REST_KNOX = {
     'TOKEN_LIMIT_PER_USER': None,
     'AUTO_REFRESH': False,
     'EXPIRY_DATETIME_FORMAT': api_settings.DATETIME_FORMAT,
+}
+
+# Elastic Search
+
+ELASTICSEARCH_DSL={
+    'default': {
+        'hosts': 'localhost:9200'
+    },
 }
 
 

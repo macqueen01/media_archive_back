@@ -90,3 +90,4 @@ def get_case_title(request, form, id):
         }, status = status.HTTP_200_OK)
     return Response({'message': "wrong method call"},
         status = status.HTTP_405_METHOD_NOT_FOUND)
+

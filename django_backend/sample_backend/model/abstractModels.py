@@ -73,9 +73,21 @@ class AbstractCase(models.Model):
 
     uploaded = models.IntegerField(default = 0)
 
-
-
     objects = CaseManager()
+
+    def form_to_string(self):
+        if self.form == 0:
+            return 'Photo'
+        elif self.form == 1:
+            return 'Video'
+        elif self.form == 2:
+            return 'Document'
+        elif self.form == 3:
+            return 'Personal'
+        return 'Location'
+    
+    def __str__(self):
+        return f'#{self.id} {self.title} {self.form_to_string()} case'
 
     class Meta:
         abstract = True
