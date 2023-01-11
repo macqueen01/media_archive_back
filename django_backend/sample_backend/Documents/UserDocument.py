@@ -1,38 +1,35 @@
 from sample_backend.models import *
-from elasticsearch_dsl import Document, Text, analyzer, Search, InnerDoc, Keyword, Nested
+from django_elasticsearch_dsl import Document, fields
+from elasticsearch_dsl import analyzer, tokenizer, Search
 from django_elasticsearch_dsl.registries import registry
 from sample_backend import client
 
+
 nori_analyzer = analyzer('nori_analyzer',
-    tokenizer='nori_tokenizer'
+    tokenizer=tokenizer('nori_tokenizer')
 )
-
-class UserInnerDoc(InnerDoc):
-    username = Text(analyzer=nori_analyzer)
-    name = Text(analyzer=nori_analyzer)
-    position = Text(analyzer=nori_analyzer)
-    standing = Text(analyzer=nori_analyzer)
-    client_ip = Text()
-    affiliation = Text(analyzer=nori_analyzer)
-
 
 @registry.register_document
 class UserDocument(Document):
-    user = Nested(UserInnerDoc)
+    name = fields.TextField(analyzer = nori_analyzer)
+    position = fields.TextField(analyzer = nori_analyzer)
+    standing = fields.TextField(analyzer = nori_analyzer)
+    affiliation = fields.TextField(analyzer = nori_analyzer)
+
+    class Index:
+        name = 'users'
+        settings = {
+            'number_of_shards': 5,
+            'number_of_replicas': 0
+        }
     
     class Django:
         model = User
-        field = [
-            'username',
-            'name',
-            'position',
-            'standing',
-            'affiliation'
+        fields = [
+            'username'
         ]
-        index = 'users'
 
-
-
+'''
 def index_new_users():
     # Get all users from the database
     users = User.objects.all()
@@ -70,7 +67,7 @@ def index_user(user):
 
     return user.id
 
-
+'''
 def search_users(query):
     s = Search(using=client, index='users')
     s = s.query('multi_match', query=query, fields=['username', 'name', 'position', 'standing', 'client_ip', 'affiliation'], fuzziness=2)

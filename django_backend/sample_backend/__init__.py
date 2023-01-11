@@ -1,4 +1,8 @@
+from elasticsearch_dsl import connections
 from elasticsearch import Elasticsearch
 
-client = Elasticsearch(host='locslhost', port=9200)
+connections.create_connection(hosts=['localhost'], timeout=100)
+client = Elasticsearch()
+
+
 

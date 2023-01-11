@@ -1,155 +1,194 @@
 from sample_backend.models import *
-from .UserDocument import UserInnerDoc
-from elasticsearch_dsl import Document, analyzer, InnerDoc, Keyword, Date, Integer, Nested, Text
+from elasticsearch_dsl import analyzer, tokenizer
 from django_elasticsearch_dsl.registries import registry
-from django_elasticsearch_dsl import fields
+from django_elasticsearch_dsl import fields, Document
 
 nori_analyzer = analyzer('nori_analyzer',
-    tokenizer='nori_tokenizer'
+    tokenizer=tokenizer('nori_tokenizer')
 )
 
 
-class LocationInnerDoc(InnerDoc):
-    construction_date = fields.DateField()
-    #connected_office = Nested(OrganizationInnerDoc)
-
-    title = fields.TextField(analyzer='nori_analyzer')
-    content = fields.TextField(analyzer='nori_analyzer')
-    created_at = fields.DateField()
-
-location_inner_doc_properties = {
-    'construction_date': fields.DateField(),
-    'title': fields.TextField(analyzer='nori_analyzer'),
-    'content': fields.TextField(analyzer='nori_analyzer'),
-    'created_at': fields.DateField(),
-}
-
-
-class PersonelInnerDoc(InnerDoc):
-    birth_date = fields.DateField(required=False)
-    affiliation = fields.Nested(properties=location_inner_doc_properties, required=False)
-    prefix = fields.KeywordField(required=False)
-    connected_account = fields.Nested(UserInnerDoc, required=False)
-
-    title = fields.TextField(analyzer='nori_analyzer')
-    content = fields.TextField(analyzer='nori_analyzer')
-    created_at = fields.DateField()
-
-personel_inner_doc_properties = {
-    'birth_date': PersonelInnerDoc().birth_date,
-    'affiliation': PersonelInnerDoc().affiliation,
-    'prefix': PersonelInnerDoc().prefix,
-    'connected_account': PersonelInnerDoc().connected_account,
-    'title': PersonelInnerDoc().title,
-    'content': PersonelInnerDoc().content,
-    'created_at': PersonelInnerDoc().created_at
-}
-
 @registry.register_document
 class PersonelDocument(Document):
-    personel = fields.Nested(properties=personel_inner_doc_properties)
+    affiliation = fields.NestedField(properties={
+        'title': fields.TextField(analyzer=nori_analyzer),
+        'content': fields.TextField(analyzer=nori_analyzer)
+    })
+    prefix = fields.TextField(required=False, analyzer=nori_analyzer)
+    connected_account = fields.NestedField(properties={
+        'name': fields.TextField(analyzer=nori_analyzer),
+        'position': fields.TextField(analyzer=nori_analyzer),
+        'standing': fields.TextField(analyzer=nori_analyzer),
+        'affiliation': fields.TextField(analyzer=nori_analyzer)
+    }, required=False)
+
+    title = fields.TextField(analyzer='nori_analyzer')
+    content = fields.TextField(analyzer='nori_analyzer')
+
+    class Index:
+        name = 'personels'
+        settings = {
+            'number_of_shards': 5,
+            'number_of_replicas': 0
+        }
 
     class Django:
         model = Personel
         fields = [
-            'birth_date',
-            'title',
-            'prefix',
-            'content',
-            'connected_account',
-            'created_at'
+            'created_at',
+            'birth_date'
         ]
-        index = 'personels'
+        related_models = [Location, User]
 
-
-
-
-
-
+    def get_instances_from_related(self, related_instance):
+        """If related_models is set, define how to retrieve the Car instance(s) from the related model.
+        The related_models option should be used with caution because it can lead in the index
+        to the updating of a lot of items.
+        """
+        if isinstance(related_instance, Location):
+            return related_instance.personel_set.all()
+        elif isinstance(related_instance, User):
+            return related_instance.personel_set.all()
+        
 
 
 
 @registry.register_document
 class LocationDocument(Document):
-    location = Nested(LocationInnerDoc)
+    
+    #title = fields.TextField(analyzer='nori_analyzer')
+    #content = fields.TextField(analyzer='nori_analyzer')
+    
+    class Index:
+        name = 'location'
+        settings = {
+            'number_of_shards': 5,
+            'number_of_replicas': 0
+        }
 
     class Django:
         model = Location
         fields = [
-            'title',
-            'affiliation',
-            'content',
             'created_at'
         ]
-        index = 'locations'
+
+
+
 
 @registry.register_document
 class VideoCaseIndex(Document):
-    associate = Nested(PersonelInnerDoc, required=False)
-    attendee = Nested(PersonelInnerDoc, required=False)
-    location = Nested(LocationInnerDoc, required=False)
-    affiliation = Nested(LocationInnerDoc, required=False)
-    produced = Integer()
+    associate = fields.NestedField(properties={
+        'title': fields.TextField(analyzer=nori_analyzer)
+    }, required=False)
+    attendee = fields.NestedField(properties={
+        'title': fields.TextField(analyzer=nori_analyzer)
+    }, required=False)
+    location = fields.NestedField(properties={
+        'title': fields.TextField(analyzer=nori_analyzer)
+    }, required=False)
+    affiliation = fields.NestedField(properties={
+        'title': fields.TextField(analyzer=nori_analyzer)
+    }, required=False)
 
-    title = Text(analyzer='nori_analyzer')
-    content = Text(analyzer='nori_analyzer')
-    created_at = Date()
+    title = fields.TextField(analyzer='nori_analyzer')
+    content = fields.TextField(analyzer='nori_analyzer')
+
+    class Index:
+        name = 'video_cases'
+        settings = {
+            'number_of_shards': 3,
+            'number_of_replicas': 0
+        }
+
 
     class Django:
         model = VideoCase
         fields = [
-            'associate',
-            'attendee',
-            'location',
-            'affiliation'
             'created_at',
-            'title',
-            'content'
+            'produced'
         ]
-        index = 'video_cases'
+        related_models = [Personel, Location]
+
+    def get_instances_from_related(self, related_instance):
+        """If related_models is set, define how to retrieve the Car instance(s) from the related model.
+        The related_models option should be used with caution because it can lead in the index
+        to the updating of a lot of items.
+        """
+        if isinstance(related_instance, Location):
+            return related_instance.to_location_in_form1.all()
+        elif isinstance(related_instance, User):
+            return related_instance.appears_in_form1.all()
 
 @registry.register_document   
 class ImageCaseIndex(Document):
-    associate = Nested(PersonelInnerDoc, required=False)
-    attendee = Nested(PersonelInnerDoc, required=False)
-    location = Nested(LocationInnerDoc, required=False)
-    affiliation = Nested(LocationInnerDoc, required=False)
-    produced = Integer()
+    associate = fields.NestedField(properties={
+        'title': fields.TextField(analyzer=nori_analyzer)
+    }, required=False)
+    attendee = fields.NestedField(properties={
+        'title': fields.TextField(analyzer=nori_analyzer)
+    }, required=False)
+    location = fields.NestedField(properties={
+        'title': fields.TextField(analyzer=nori_analyzer)
+    }, required=False)
+    affiliation = fields.NestedField(properties={
+        'title': fields.TextField(analyzer=nori_analyzer)
+    }, required=False)
 
-    title = Text(analyzer='nori_analyzer')
-    content = Text(analyzer='nori_analyzer')
-    created_at = Date()
+    title = fields.TextField(analyzer='nori_analyzer')
+    content = fields.TextField(analyzer='nori_analyzer')
+
+
+    class Index:
+        name = 'image_cases'
+        settings = {
+            'number_of_shards': 5,
+            'number_of_replicas': 0
+        }
+
 
     class Django:
         model = ImageCase
         fields = [
-            'associate',
-            'attendee',
-            'location',
-            'affiliation'
             'created_at',
-            'title',
-            'content'
+            'produced'
         ]
-        index = 'image_cases'
+        related_models = [Location, Personel]
+    
+    def get_instances_from_related(self, related_instance):
+        """If related_models is set, define how to retrieve the Car instance(s) from the related model.
+        The related_models option should be used with caution because it can lead in the index
+        to the updating of a lot of items.
+        """
+        if isinstance(related_instance, Location):
+            return related_instance.to_location_in_form0.all()
+        elif isinstance(related_instance, User):
+            return related_instance.appears_in_form0.all()
+
 
 @registry.register_document
 class DocCaseIndex(Document):
-    writer = Nested(PersonelInnerDoc, required = False)
-    referenced_personel = Nested(PersonelInnerDoc, required=False)
+    writer = fields.NestedField(properties={
+        'title': fields.TextField(analyzer=nori_analyzer)
+    })
+    referenced_personel = fields.NestedField(properties={
+        'title': fields.TextField(analyzer=nori_analyzer)
+    })
 
-    title = Text(analyzer='nori_analyzer')
-    content = Text(analyzer='nori_analyzer')
-    created_at = Date()
+    title = fields.TextField(analyzer='nori_analyzer')
+    content = fields.TextField(analyzer='nori_analyzer')
+
+    class Index:
+        name='doc_cases'
+        settings = {
+            'number_of_shards': 5,
+            'number_of_replicas': 0
+        }
 
     class Django:
         model = DocCase
         fields = [
-            'id',
-            'created_at',
-            'title',
-            'content',
-            'writer',
-            'referenced_personel'
+            'created_at'
         ]
-        index = 'document_cases'
+        related_models = [Location, Personel]
+    
+
