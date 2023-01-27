@@ -37,8 +37,6 @@ class VideoCase(abstractModels.AbstractCase):
     produced = models.IntegerField()
     affiliation = models.ForeignKey(Location, on_delete=models.SET_NULL, null = True, related_name = f"to_affiliation_in_form{case_form}")
 
-
-
     
     class Meta: 
         abstract = False

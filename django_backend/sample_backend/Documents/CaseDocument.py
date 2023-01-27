@@ -36,7 +36,9 @@ class PersonelDocument(Document):
         model = Personel
         fields = [
             'created_at',
-            'birth_date'
+            'birth_date',
+            'id',
+            'form'
         ]
         related_models = [Location, User]
 
@@ -69,7 +71,9 @@ class LocationDocument(Document):
     class Django:
         model = Location
         fields = [
-            'created_at'
+            'created_at',
+            'id',
+            'form'
         ]
 
 
@@ -105,7 +109,9 @@ class VideoCaseIndex(Document):
         model = VideoCase
         fields = [
             'created_at',
-            'produced'
+            'produced',
+            'id',
+            'form'
         ]
         related_models = [Personel, Location]
 
@@ -150,7 +156,9 @@ class ImageCaseIndex(Document):
         model = ImageCase
         fields = [
             'created_at',
-            'produced'
+            'produced',
+            'id',
+            'form'
         ]
         related_models = [Location, Personel]
     
@@ -187,8 +195,21 @@ class DocCaseIndex(Document):
     class Django:
         model = DocCase
         fields = [
-            'created_at'
+            'created_at',
+            'id',
+            'form'
         ]
         related_models = [Location, Personel]
+
+
+    def get_instances_from_related(self, related_instance):
+        """If related_models is set, define how to retrieve the Car instance(s) from the related model.
+        The related_models option should be used with caution because it can lead in the index
+        to the updating of a lot of items.
+        """
+        if isinstance(related_instance, Location):
+            return related_instance.to_location_in_form2.all()
+        elif isinstance(related_instance, User):
+            return related_instance.appears_in_form2.all()
     
 
